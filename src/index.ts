@@ -53,7 +53,7 @@ class Flowy {
   private mouse_y?: number;
   private dragblock: boolean = false;
   private prevblock: number = 0;
-  private el: HTMLDivElement;
+  private el: HTMLElement;
   private grab: Function = (block: HTMLElement | Element) => {};
 
   constructor(
@@ -68,7 +68,7 @@ class Flowy {
     this.canvas_div = canvas;
     this.paddingx = spacing_x;
     this.paddingy = spacing_y;
-
+    // polyfill for the Element.matches and Element.closest methods
     if (!Element.prototype.matches) {
       Element.prototype.matches =
         Element.prototype.msMatchesSelector ||
@@ -101,13 +101,13 @@ class Flowy {
     this.canvas_div.innerHTML = output.html;
     for (let i = 0; i < output.blockarr.length; i++) {
       this.blocks.push({
-        childwidth: parseFloat(output.blockarr[i].childwidth),
-        parent: parseFloat(output.blockarr[i].parent),
-        id: parseFloat(output.blockarr[i].id),
-        x: parseFloat(output.blockarr[i].x),
-        y: parseFloat(output.blockarr[i].y),
-        width: parseFloat(output.blockarr[i].width),
-        height: parseFloat(output.blockarr[i].height),
+        childwidth: output.blockarr[i].childwidth,
+        parent: output.blockarr[i].parent,
+        id: output.blockarr[i].id,
+        x: output.blockarr[i].x,
+        y: output.blockarr[i].y,
+        width: output.blockarr[i].width,
+        height: output.blockarr[i].height,
       });
     }
     if (this.blocks.length > 1) {
@@ -204,7 +204,7 @@ class Flowy {
 
     this.drag = document.querySelector(`.blockid[value='${blockId}']`)
       ?.parentNode as HTMLElement;
-    this.blockGrabbed(targetElement);
+    this.blockGrabbed(targetElement as HTMLElement);
     this.drag.classList.add("dragging");
     this.active = true;
     this.dragx = clientX - targetElement.getBoundingClientRect().left;
@@ -212,4 +212,73 @@ class Flowy {
     this.drag.style.left = `${clientX - this.dragx}px`;
     this.drag.style.top = `${clientY - this.dragy}px`;
   }
+  
+  endDrag(event: MouseEvent): void {
+    if (event.which !== 3 && (this.active || this.rearrange)) {
+      this.dragblock = false;
+      this.blockReleased();
+      const indicator = document.querySelector(".indicator");
+      
+      if (indicator && !indicator.classList.contains("invisible")) {
+        indicator.classList.add("invisible");
+      }
+      
+      if (this.active) {
+        this.original?.classList.remove("dragnow");
+        this.drag?.classList.remove("dragging");
+      }
+
+      const blockId = parseInt(this.drag?.querySelector(".blockid")?.value || '');
+
+      if (blockId === 0 && this.rearrange) {
+        this.firstBlock("rearrange");
+      } else if (this.active && this.blocks.length === 0 && (this.drag.getBoundingClientRect().top + window.scrollY) > (this.canvas_div.getBoundingClientRect().top + window.scrollY) && (this.drag.getBoundingClientRect().left + window.scrollX) > (this.canvas_div.getBoundingClientRect().left + window.scrollX)) {
+        this.firstBlock("drop");
+      } else if (this.active && this.blocks.length === 0) {
+        this.removeSelection();
+      } else if (this.active) {
+        const blockIds = this.blocks.map(a => a.id);
+        for (let i = 0; i < this.blocks.length; i++) {
+          if (this.checkAttach(blockIds[i])) {
+            this.active = false;
+            if (this.blockSnap(this.drag, false, document.querySelector(`.blockid[value='${blockIds[i]}']`).parentNode as HTMLElement)) {
+              this.snap(this.drag, i, blockIds);
+            } else {
+              this.active = false;
+              this.removeSelection();
+            }
+            break;
+          } else if (i === this.blocks.length - 1) {
+            this.active = false;
+            this.removeSelection();
+          }
+        }
+      } else if (this.rearrange) {
+        const blockIds = this.blocks.map(a => a.id);
+        for (let i = 0; i < this.blocks.length; i++) {
+          if (this.checkAttach(blockIds[i])) {
+            this.active = false;
+            this.drag.classList.remove("dragging");
+            this.snap(this.drag, i, blockIds);
+            break;
+          } else if (i === this.blocks.length - 1) {
+            if (this.beforeDelete(this.drag, this.blocks.filter(id => id.id === blockIds[i])[0])) {
+              this.active = false;
+              this.drag.classList.remove("dragging");
+              this.snap(this.drag, blockIds.indexOf(this.prevblock), blockIds);
+              break;
+            } else {
+              this.rearrange = false;
+              this.blockstemp = [];
+              this.active = false;
+              this.removeSelection();
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  
 }

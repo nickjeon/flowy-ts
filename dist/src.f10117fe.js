@@ -158,6 +158,7 @@ var Flowy = /** @class */function () {
     this.canvas_div = canvas;
     this.paddingx = spacing_x;
     this.paddingy = spacing_y;
+    // polyfill for the Element.matches and Element.closest methods
     if (!Element.prototype.matches) {
       Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
     }
@@ -185,13 +186,13 @@ var Flowy = /** @class */function () {
     this.canvas_div.innerHTML = output.html;
     for (var i = 0; i < output.blockarr.length; i++) {
       this.blocks.push({
-        childwidth: parseFloat(output.blockarr[i].childwidth),
-        parent: parseFloat(output.blockarr[i].parent),
-        id: parseFloat(output.blockarr[i].id),
-        x: parseFloat(output.blockarr[i].x),
-        y: parseFloat(output.blockarr[i].y),
-        width: parseFloat(output.blockarr[i].width),
-        height: parseFloat(output.blockarr[i].height)
+        childwidth: output.blockarr[i].childwidth,
+        parent: output.blockarr[i].parent,
+        id: output.blockarr[i].id,
+        x: output.blockarr[i].x,
+        y: output.blockarr[i].y,
+        width: output.blockarr[i].width,
+        height: output.blockarr[i].height
       });
     }
     if (this.blocks.length > 1) {
@@ -277,6 +278,80 @@ var Flowy = /** @class */function () {
     this.dragy = clientY - targetElement.getBoundingClientRect().top;
     this.drag.style.left = "".concat(clientX - this.dragx, "px");
     this.drag.style.top = "".concat(clientY - this.dragy, "px");
+  };
+  Flowy.prototype.endDrag = function (event) {
+    var _a, _b, _c, _d;
+    if (event.which !== 3 && (this.active || this.rearrange)) {
+      this.dragblock = false;
+      this.blockReleased();
+      var indicator = document.querySelector(".indicator");
+      if (indicator && !indicator.classList.contains("invisible")) {
+        indicator.classList.add("invisible");
+      }
+      if (this.active) {
+        (_a = this.original) === null || _a === void 0 ? void 0 : _a.classList.remove("dragnow");
+        (_b = this.drag) === null || _b === void 0 ? void 0 : _b.classList.remove("dragging");
+      }
+      var blockId = parseInt(((_d = (_c = this.drag) === null || _c === void 0 ? void 0 : _c.querySelector(".blockid")) === null || _d === void 0 ? void 0 : _d.value) || '');
+      if (blockId === 0 && this.rearrange) {
+        this.firstBlock("rearrange");
+      } else if (this.active && this.blocks.length === 0 && this.drag.getBoundingClientRect().top + window.scrollY > this.canvas_div.getBoundingClientRect().top + window.scrollY && this.drag.getBoundingClientRect().left + window.scrollX > this.canvas_div.getBoundingClientRect().left + window.scrollX) {
+        this.firstBlock("drop");
+      } else if (this.active && this.blocks.length === 0) {
+        this.removeSelection();
+      } else if (this.active) {
+        var blockIds = this.blocks.map(function (a) {
+          return a.id;
+        });
+        for (var i = 0; i < this.blocks.length; i++) {
+          if (this.checkAttach(blockIds[i])) {
+            this.active = false;
+            if (this.blockSnap(this.drag, false, document.querySelector(".blockid[value='".concat(blockIds[i], "']")).parentNode)) {
+              this.snap(this.drag, i, blockIds);
+            } else {
+              this.active = false;
+              this.removeSelection();
+            }
+            break;
+          } else if (i === this.blocks.length - 1) {
+            this.active = false;
+            this.removeSelection();
+          }
+        }
+      } else if (this.rearrange) {
+        var blockIds_1 = this.blocks.map(function (a) {
+          return a.id;
+        });
+        var _loop_2 = function _loop_2(i) {
+          if (this_2.checkAttach(blockIds_1[i])) {
+            this_2.active = false;
+            this_2.drag.classList.remove("dragging");
+            this_2.snap(this_2.drag, i, blockIds_1);
+            return "break";
+          } else if (i === this_2.blocks.length - 1) {
+            if (this_2.beforeDelete(this_2.drag, this_2.blocks.filter(function (id) {
+              return id.id === blockIds_1[i];
+            })[0])) {
+              this_2.active = false;
+              this_2.drag.classList.remove("dragging");
+              this_2.snap(this_2.drag, blockIds_1.indexOf(this_2.prevblock), blockIds_1);
+              return "break";
+            } else {
+              this_2.rearrange = false;
+              this_2.blockstemp = [];
+              this_2.active = false;
+              this_2.removeSelection();
+              return "break";
+            }
+          }
+        };
+        var this_2 = this;
+        for (var i = 0; i < this.blocks.length; i++) {
+          var state_1 = _loop_2(i);
+          if (state_1 === "break") break;
+        }
+      }
+    }
   };
   return Flowy;
 }();
