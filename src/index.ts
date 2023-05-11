@@ -212,36 +212,52 @@ class Flowy {
     this.drag.style.left = `${clientX - this.dragx}px`;
     this.drag.style.top = `${clientY - this.dragy}px`;
   }
-  
+
   endDrag(event: MouseEvent): void {
     if (event.which !== 3 && (this.active || this.rearrange)) {
       this.dragblock = false;
       this.blockReleased();
       const indicator = document.querySelector(".indicator");
-      
+
       if (indicator && !indicator.classList.contains("invisible")) {
         indicator.classList.add("invisible");
       }
-      
+
       if (this.active) {
         this.original?.classList.remove("dragnow");
         this.drag?.classList.remove("dragging");
       }
 
-      const blockId = parseInt(this.drag?.querySelector(".blockid")?.value || '');
+      const blockId = parseInt(
+        this.drag?.querySelector(".blockid")?.value || ""
+      );
 
       if (blockId === 0 && this.rearrange) {
         this.firstBlock("rearrange");
-      } else if (this.active && this.blocks.length === 0 && (this.drag.getBoundingClientRect().top + window.scrollY) > (this.canvas_div.getBoundingClientRect().top + window.scrollY) && (this.drag.getBoundingClientRect().left + window.scrollX) > (this.canvas_div.getBoundingClientRect().left + window.scrollX)) {
+      } else if (
+        this.active &&
+        this.blocks.length === 0 &&
+        this.drag.getBoundingClientRect().top + window.scrollY >
+          this.canvas_div.getBoundingClientRect().top + window.scrollY &&
+        this.drag.getBoundingClientRect().left + window.scrollX >
+          this.canvas_div.getBoundingClientRect().left + window.scrollX
+      ) {
         this.firstBlock("drop");
       } else if (this.active && this.blocks.length === 0) {
         this.removeSelection();
       } else if (this.active) {
-        const blockIds = this.blocks.map(a => a.id);
+        const blockIds = this.blocks.map((a) => a.id);
         for (let i = 0; i < this.blocks.length; i++) {
           if (this.checkAttach(blockIds[i])) {
             this.active = false;
-            if (this.blockSnap(this.drag, false, document.querySelector(`.blockid[value='${blockIds[i]}']`).parentNode as HTMLElement)) {
+            if (
+              this.blockSnap(
+                this.drag,
+                false,
+                document.querySelector(`.blockid[value='${blockIds[i]}']`)
+                  .parentNode as HTMLElement
+              )
+            ) {
               this.snap(this.drag, i, blockIds);
             } else {
               this.active = false;
@@ -254,7 +270,7 @@ class Flowy {
           }
         }
       } else if (this.rearrange) {
-        const blockIds = this.blocks.map(a => a.id);
+        const blockIds = this.blocks.map((a) => a.id);
         for (let i = 0; i < this.blocks.length; i++) {
           if (this.checkAttach(blockIds[i])) {
             this.active = false;
@@ -262,7 +278,12 @@ class Flowy {
             this.snap(this.drag, i, blockIds);
             break;
           } else if (i === this.blocks.length - 1) {
-            if (this.beforeDelete(this.drag, this.blocks.filter(id => id.id === blockIds[i])[0])) {
+            if (
+              this.beforeDelete(
+                this.drag,
+                this.blocks.filter((id) => id.id === blockIds[i])[0]
+              )
+            ) {
               this.active = false;
               this.drag.classList.remove("dragging");
               this.snap(this.drag, blockIds.indexOf(this.prevblock), blockIds);
@@ -279,6 +300,35 @@ class Flowy {
       }
     }
   }
-  
-  
+
+  checkAttach(id: number): boolean {
+    const xpos =
+      this.drag.getBoundingClientRect().left +
+      window.scrollX +
+      parseInt(window.getComputedStyle(this.drag).width) / 2 +
+      this.canvas_div.scrollLeft -
+      this.canvas_div.getBoundingClientRect().left;
+    const ypos =
+      this.drag.getBoundingClientRect().top +
+      window.scrollY +
+      this.canvas_div.scrollTop -
+      this.canvas_div.getBoundingClientRect().top;
+    const block = this.blocks.filter((a) => a.id === id)[0];
+
+    if (
+      xpos >= block.x - block.width / 2 - this.paddingx &&
+      xpos <= block.x + block.width / 2 + this.paddingx &&
+      ypos >= block.y - block.height / 2 &&
+      ypos <= block.y + block.height
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  removeSelection(): void {
+    this.canvas_div.appendChild(document.querySelector(".indicator"));
+    this.drag.parentNode?.removeChild(this.drag);
+  }
 }

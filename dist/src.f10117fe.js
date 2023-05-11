@@ -292,7 +292,7 @@ var Flowy = /** @class */function () {
         (_a = this.original) === null || _a === void 0 ? void 0 : _a.classList.remove("dragnow");
         (_b = this.drag) === null || _b === void 0 ? void 0 : _b.classList.remove("dragging");
       }
-      var blockId = parseInt(((_d = (_c = this.drag) === null || _c === void 0 ? void 0 : _c.querySelector(".blockid")) === null || _d === void 0 ? void 0 : _d.value) || '');
+      var blockId = parseInt(((_d = (_c = this.drag) === null || _c === void 0 ? void 0 : _c.querySelector(".blockid")) === null || _d === void 0 ? void 0 : _d.value) || "");
       if (blockId === 0 && this.rearrange) {
         this.firstBlock("rearrange");
       } else if (this.active && this.blocks.length === 0 && this.drag.getBoundingClientRect().top + window.scrollY > this.canvas_div.getBoundingClientRect().top + window.scrollY && this.drag.getBoundingClientRect().left + window.scrollX > this.canvas_div.getBoundingClientRect().left + window.scrollX) {
@@ -352,6 +352,23 @@ var Flowy = /** @class */function () {
         }
       }
     }
+  };
+  Flowy.prototype.checkAttach = function (id) {
+    var xpos = this.drag.getBoundingClientRect().left + window.scrollX + parseInt(window.getComputedStyle(this.drag).width) / 2 + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left;
+    var ypos = this.drag.getBoundingClientRect().top + window.scrollY + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top;
+    var block = this.blocks.filter(function (a) {
+      return a.id === id;
+    })[0];
+    if (xpos >= block.x - block.width / 2 - this.paddingx && xpos <= block.x + block.width / 2 + this.paddingx && ypos >= block.y - block.height / 2 && ypos <= block.y + block.height) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  Flowy.prototype.removeSelection = function () {
+    var _a;
+    this.canvas_div.appendChild(document.querySelector(".indicator"));
+    (_a = this.drag.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.drag);
   };
   return Flowy;
 }();
