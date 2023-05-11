@@ -331,4 +331,174 @@ class Flowy {
     this.canvas_div.appendChild(document.querySelector(".indicator"));
     this.drag.parentNode?.removeChild(this.drag);
   }
+
+  firstBlock(type: string): void {
+    if (type == "drop") {
+      this.blockSnap(this.drag, true, undefined);
+      this.active = false;
+      this.drag.style.top =
+        this.drag.getBoundingClientRect().top +
+        window.scrollY -
+        (this.absy + window.scrollY) +
+        this.canvas_div.scrollTop +
+        "px";
+      this.drag.style.left =
+        this.drag.getBoundingClientRect().left +
+        window.scrollX -
+        (this.absx + window.scrollX) +
+        this.canvas_div.scrollLeft +
+        "px";
+      this.canvas_div.appendChild(this.drag);
+      this.blocks.push({
+        parent: -1,
+        childwidth: 0,
+        id: parseInt(this.drag.querySelector(".blockid").value),
+        x:
+          this.drag.getBoundingClientRect().left +
+          window.scrollX +
+          parseInt(window.getComputedStyle(this.drag).width) / 2 +
+          this.canvas_div.scrollLeft -
+          this.canvas_div.getBoundingClientRect().left,
+        y:
+          this.drag.getBoundingClientRect().top +
+          window.scrollY +
+          parseInt(window.getComputedStyle(this.drag).height) / 2 +
+          this.canvas_div.scrollTop -
+          this.canvas_div.getBoundingClientRect().top,
+        width: parseInt(window.getComputedStyle(this.drag).width),
+        height: parseInt(window.getComputedStyle(this.drag).height),
+      });
+    } else if (type == "rearrange") {
+      this.drag.classList.remove("dragging");
+      this.rearrange = false;
+      for (let w = 0; w < this.blockstemp.length; w++) {
+        if (
+          this.blockstemp[w].id !=
+          parseInt(this.drag.querySelector(".blockid").value)
+        ) {
+          const blockParent = document.querySelector(
+            ".blockid[value='" + this.blockstemp[w].id + "']"
+          ).parentNode;
+          const arrowParent = document.querySelector(
+            ".arrowid[value='" + this.blockstemp[w].id + "']"
+          ).parentNode;
+          blockParent.style.left =
+            blockParent.getBoundingClientRect().left +
+            window.scrollX -
+            window.scrollX +
+            this.canvas_div.scrollLeft -
+            1 -
+            this.absx +
+            "px";
+          blockParent.style.top =
+            blockParent.getBoundingClientRect().top +
+            window.scrollY -
+            window.scrollY +
+            this.canvas_div.scrollTop -
+            this.absy -
+            1 +
+            "px";
+          arrowParent.style.left =
+            arrowParent.getBoundingClientRect().left +
+            window.scrollX -
+            window.scrollX +
+            this.canvas_div.scrollLeft -
+            this.absx -
+            1 +
+            "px";
+          arrowParent.style.top =
+            arrowParent.getBoundingClientRect().top +
+            window.scrollY +
+            this.canvas_div.scrollTop -
+            1 -
+            this.absy +
+            "px";
+          this.canvas_div.appendChild(blockParent);
+          this.canvas_div.appendChild(arrowParent);
+          this.blockstemp[w].x =
+            blockParent.getBoundingClientRect().left +
+            window.scrollX +
+            parseInt(blockParent.offsetWidth) / 2 +
+            this.canvas_div.scrollLeft -
+            this.canvas_div.getBoundingClientRect().left -
+            1;
+          this.blockstemp[w].y =
+            blockParent.getBoundingClientRect().top +
+            window.scrollY +
+            parseInt(blockParent.offsetHeight) / 2 +
+            this.canvas_div.scrollTop -
+            this.canvas_div.getBoundingClientRect().top -
+            1;
+        }
+      }
+      this.blockstemp.filter((a) => a.id == 0)[0].x =
+        this.drag.getBoundingClientRect().left +
+        window.scrollX +
+        parseInt(window.getComputedStyle(this.drag).width) / 2 +
+        this.canvas_div.scrollLeft -
+        this.canvas_div.getBoundingClientRect().left;
+      this.blockstemp.filter((a) => a.id == 0)[0].y =
+        this.drag.getBoundingClientRect().top +
+        window.scrollY +
+        parseInt(window.getComputedStyle(this.drag).height) / 2 +
+        this.canvas_div.scrollTop -
+        this.canvas_div.getBoundingClientRect().top;
+      this.blocks = this.blocks.concat(this.blockstemp);
+      this.blockstemp = [];
+    }
+  }
+
+  drawArrow(arrow, x, y, id): void {
+    if (x < 0) {
+      this.canvas_div.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${
+        this.drag.querySelector(".blockid").value
+      }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M${
+        this.blocks.filter((a) => a.id == id)[0].x - arrow.x + 5
+      } 0L${this.blocks.filter((a) => a.id == id)[0].x - arrow.x + 5} ${
+        this.paddingy / 2
+      }L5 ${
+        this.paddingy / 2
+      }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
+        y - 5
+      }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
+      document.querySelector(
+        `.arrowid[value="${this.drag.querySelector(".blockid").value}"]`
+      ).parentNode.style.left =
+        arrow.x -
+        5 -
+        (this.absx + window.scrollX) +
+        this.canvas_div.scrollLeft +
+        this.canvas_div.getBoundingClientRect().left +
+        "px";
+    } else {
+      this.canvas_div.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${
+        this.drag.querySelector(".blockid").value
+      }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0L20 ${
+        this.paddingy / 2
+      }L${x} ${
+        this.paddingy / 2
+      }L${x} ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M${x - 5} ${
+        y - 5
+      }H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
+      document.querySelector(
+        `.arrowid[value="${parseInt(
+          this.drag.querySelector(".blockid").value
+        )}"]`
+      ).parentNode.style.left =
+        this.blocks.filter((a) => a.id == id)[0].x -
+        20 -
+        (this.absx + window.scrollX) +
+        this.canvas_div.scrollLeft +
+        this.canvas_div.getBoundingClientRect().left +
+        "px";
+    }
+    document.querySelector(
+      `.arrowid[value="${parseInt(this.drag.querySelector(".blockid").value)}"]`
+    ).parentNode.style.top =
+      this.blocks.filter((a) => a.id == id)[0].y +
+      this.blocks.filter((a) => a.id == id)[0].height / 2 +
+      this.canvas_div.getBoundingClientRect().top -
+      this.absy +
+      "px";
+  }
 }

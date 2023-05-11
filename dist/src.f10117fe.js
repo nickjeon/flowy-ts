@@ -370,6 +370,69 @@ var Flowy = /** @class */function () {
     this.canvas_div.appendChild(document.querySelector(".indicator"));
     (_a = this.drag.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.drag);
   };
+  Flowy.prototype.firstBlock = function (type) {
+    if (type == "drop") {
+      this.blockSnap(this.drag, true, undefined);
+      this.active = false;
+      this.drag.style.top = this.drag.getBoundingClientRect().top + window.scrollY - (this.absy + window.scrollY) + this.canvas_div.scrollTop + "px";
+      this.drag.style.left = this.drag.getBoundingClientRect().left + window.scrollX - (this.absx + window.scrollX) + this.canvas_div.scrollLeft + "px";
+      this.canvas_div.appendChild(this.drag);
+      this.blocks.push({
+        parent: -1,
+        childwidth: 0,
+        id: parseInt(this.drag.querySelector(".blockid").value),
+        x: this.drag.getBoundingClientRect().left + window.scrollX + parseInt(window.getComputedStyle(this.drag).width) / 2 + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left,
+        y: this.drag.getBoundingClientRect().top + window.scrollY + parseInt(window.getComputedStyle(this.drag).height) / 2 + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top,
+        width: parseInt(window.getComputedStyle(this.drag).width),
+        height: parseInt(window.getComputedStyle(this.drag).height)
+      });
+    } else if (type == "rearrange") {
+      this.drag.classList.remove("dragging");
+      this.rearrange = false;
+      for (var w = 0; w < this.blockstemp.length; w++) {
+        if (this.blockstemp[w].id != parseInt(this.drag.querySelector(".blockid").value)) {
+          var blockParent = document.querySelector(".blockid[value='" + this.blockstemp[w].id + "']").parentNode;
+          var arrowParent = document.querySelector(".arrowid[value='" + this.blockstemp[w].id + "']").parentNode;
+          blockParent.style.left = blockParent.getBoundingClientRect().left + window.scrollX - window.scrollX + this.canvas_div.scrollLeft - 1 - this.absx + "px";
+          blockParent.style.top = blockParent.getBoundingClientRect().top + window.scrollY - window.scrollY + this.canvas_div.scrollTop - this.absy - 1 + "px";
+          arrowParent.style.left = arrowParent.getBoundingClientRect().left + window.scrollX - window.scrollX + this.canvas_div.scrollLeft - this.absx - 1 + "px";
+          arrowParent.style.top = arrowParent.getBoundingClientRect().top + window.scrollY + this.canvas_div.scrollTop - 1 - this.absy + "px";
+          this.canvas_div.appendChild(blockParent);
+          this.canvas_div.appendChild(arrowParent);
+          this.blockstemp[w].x = blockParent.getBoundingClientRect().left + window.scrollX + parseInt(blockParent.offsetWidth) / 2 + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left - 1;
+          this.blockstemp[w].y = blockParent.getBoundingClientRect().top + window.scrollY + parseInt(blockParent.offsetHeight) / 2 + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top - 1;
+        }
+      }
+      this.blockstemp.filter(function (a) {
+        return a.id == 0;
+      })[0].x = this.drag.getBoundingClientRect().left + window.scrollX + parseInt(window.getComputedStyle(this.drag).width) / 2 + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left;
+      this.blockstemp.filter(function (a) {
+        return a.id == 0;
+      })[0].y = this.drag.getBoundingClientRect().top + window.scrollY + parseInt(window.getComputedStyle(this.drag).height) / 2 + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top;
+      this.blocks = this.blocks.concat(this.blockstemp);
+      this.blockstemp = [];
+    }
+  };
+  Flowy.prototype.drawArrow = function (arrow, x, y, id) {
+    if (x < 0) {
+      this.canvas_div.innerHTML += "<div class=\"arrowblock\"><input type=\"hidden\" class=\"arrowid\" value=\"".concat(this.drag.querySelector(".blockid").value, "\"><svg preserveaspectratio=\"none\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M").concat(this.blocks.filter(function (a) {
+        return a.id == id;
+      })[0].x - arrow.x + 5, " 0L").concat(this.blocks.filter(function (a) {
+        return a.id == id;
+      })[0].x - arrow.x + 5, " ").concat(this.paddingy / 2, "L5 ").concat(this.paddingy / 2, "L5 ").concat(y, "\" stroke=\"#C5CCD0\" stroke-width=\"2px\"/><path d=\"M0 ").concat(y - 5, "H10L5 ").concat(y, "L0 ").concat(y - 5, "Z\" fill=\"#C5CCD0\"/></svg></div>");
+      document.querySelector(".arrowid[value=\"".concat(this.drag.querySelector(".blockid").value, "\"]")).parentNode.style.left = arrow.x - 5 - (this.absx + window.scrollX) + this.canvas_div.scrollLeft + this.canvas_div.getBoundingClientRect().left + "px";
+    } else {
+      this.canvas_div.innerHTML += "<div class=\"arrowblock\"><input type=\"hidden\" class=\"arrowid\" value=\"".concat(this.drag.querySelector(".blockid").value, "\"><svg preserveaspectratio=\"none\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20 0L20 ").concat(this.paddingy / 2, "L").concat(x, " ").concat(this.paddingy / 2, "L").concat(x, " ").concat(y, "\" stroke=\"#C5CCD0\" stroke-width=\"2px\"/><path d=\"M").concat(x - 5, " ").concat(y - 5, "H").concat(x + 5, "L").concat(x, " ").concat(y, "L").concat(x - 5, " ").concat(y - 5, "Z\" fill=\"#C5CCD0\"/></svg></div>");
+      document.querySelector(".arrowid[value=\"".concat(parseInt(this.drag.querySelector(".blockid").value), "\"]")).parentNode.style.left = this.blocks.filter(function (a) {
+        return a.id == id;
+      })[0].x - 20 - (this.absx + window.scrollX) + this.canvas_div.scrollLeft + this.canvas_div.getBoundingClientRect().left + "px";
+    }
+    document.querySelector(".arrowid[value=\"".concat(parseInt(this.drag.querySelector(".blockid").value), "\"]")).parentNode.style.top = this.blocks.filter(function (a) {
+      return a.id == id;
+    })[0].y + this.blocks.filter(function (a) {
+      return a.id == id;
+    })[0].height / 2 + this.canvas_div.getBoundingClientRect().top - this.absy + "px";
+  };
   return Flowy;
 }();
 },{}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
