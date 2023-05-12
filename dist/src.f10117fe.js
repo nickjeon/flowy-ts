@@ -433,6 +433,21 @@ var Flowy = /** @class */function () {
       return a.id == id;
     })[0].height / 2 + this.canvas_div.getBoundingClientRect().top - this.absy + "px";
   };
+  Flowy.prototype.updateArrow = function (arrow, x, y, children) {
+    if (x < 0) {
+      document.querySelector(".arrowid[value=\"".concat(children.id, "\"]")).parentNode.style.left = arrow.x - 5 - (this.absx + window.scrollX) + this.canvas_div.getBoundingClientRect().left + "px";
+      document.querySelector(".arrowid[value=\"".concat(children.id, "\"]")).parentNode.innerHTML = "<input type=\"hidden\" class=\"arrowid\" value=\"".concat(children.id, "\"><svg preserveaspectratio=\"none\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M").concat(this.blocks.filter(function (id) {
+        return id.id == children.parent;
+      })[0].x - arrow.x + 5, " 0L").concat(this.blocks.filter(function (id) {
+        return id.id == children.parent;
+      })[0].x - arrow.x + 5, " ").concat(this.paddingy / 2, "L5 ").concat(this.paddingy / 2, "L5 ").concat(y, "\" stroke=\"#C5CCD0\" stroke-width=\"2px\"/><path d=\"M0 ").concat(y - 5, "H10L5 ").concat(y, "L0 ").concat(y - 5, "Z\" fill=\"#C5CCD0\"/></svg>");
+    } else {
+      document.querySelector(".arrowid[value=\"".concat(children.id, "\"]")).parentNode.style.left = this.blocks.filter(function (id) {
+        return id.id == children.parent;
+      })[0].x - 20 - (this.absx + window.scrollX) + this.canvas_div.getBoundingClientRect().left + "px";
+      document.querySelector(".arrowid[value=\"".concat(children.id, "\"]")).parentNode.innerHTML = "<input type=\"hidden\" class=\"arrowid\" value=\"".concat(children.id, "\"><svg preserveaspectratio=\"none\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20 0L20 ").concat(this.paddingy / 2, "L").concat(x, " ").concat(this.paddingy / 2, "L").concat(x, " ").concat(y, "\" stroke=\"#C5CCD0\" stroke-width=\"2px\"/><path d=\"M").concat(x - 5, " ").concat(y - 5, "H").concat(x + 5, "L").concat(x, " ").concat(y, "L").concat(x - 5, " ").concat(y - 5, "Z\" fill=\"#C5CCD0\"/></svg>");
+    }
+  };
   return Flowy;
 }();
 },{}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {

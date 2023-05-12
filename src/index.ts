@@ -501,4 +501,50 @@ class Flowy {
       this.absy +
       "px";
   }
+
+  updateArrow(arrow, x, y, children): void {
+    if (x < 0) {
+      document.querySelector(
+        `.arrowid[value="${children.id}"]`
+      ).parentNode.style.left =
+        arrow.x -
+        5 -
+        (this.absx + window.scrollX) +
+        this.canvas_div.getBoundingClientRect().left +
+        "px";
+      document.querySelector(
+        `.arrowid[value="${children.id}"]`
+      ).parentNode.innerHTML = `<input type="hidden" class="arrowid" value="${
+        children.id
+      }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M${
+        this.blocks.filter((id) => id.id == children.parent)[0].x - arrow.x + 5
+      } 0L${
+        this.blocks.filter((id) => id.id == children.parent)[0].x - arrow.x + 5
+      } ${this.paddingy / 2}L5 ${
+        this.paddingy / 2
+      }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
+        y - 5
+      }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg>`;
+    } else {
+      document.querySelector(
+        `.arrowid[value="${children.id}"]`
+      ).parentNode.style.left =
+        this.blocks.filter((id) => id.id == children.parent)[0].x -
+        20 -
+        (this.absx + window.scrollX) +
+        this.canvas_div.getBoundingClientRect().left +
+        "px";
+      document.querySelector(
+        `.arrowid[value="${children.id}"]`
+      ).parentNode.innerHTML = `<input type="hidden" class="arrowid" value="${
+        children.id
+      }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0L20 ${
+        this.paddingy / 2
+      }L${x} ${
+        this.paddingy / 2
+      }L${x} ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M${x - 5} ${
+        y - 5
+      }H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/></svg>`;
+    }
+  }
 }
