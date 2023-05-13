@@ -930,4 +930,30 @@ class Flowy {
       }
     }
   }
+  
+  blockReleased(): void {
+    this.release();
+  }
+
+  blockSnap(drag: HTMLElement, first: boolean, parent: number): boolean {
+    return this.snapping(drag, first, parent);
+  }
+
+  beforeDelete(drag: HTMLElement, parent: number): boolean {
+    return this.rearrange(drag, parent);
+  }
+
+  addEventListenerMulti(type: string, listener: EventListenerOrEventListenerObject, capture: boolean, selector: string): void {
+    const nodes = document.querySelectorAll(selector);
+    for (let i = 0; i < nodes.length; i++) {
+        nodes[i].addEventListener(type, listener, capture);
+    }
+  }
+
+  removeEventListenerMulti(type: string, listener: EventListenerOrEventListenerObject, capture: boolean, selector: string): void {
+    const nodes = document.querySelectorAll(selector);
+    for (let i = 0; i < nodes.length; i++) {
+        nodes[i].removeEventListener(type, listener, capture);
+    }
+  }
 }
