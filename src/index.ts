@@ -713,35 +713,247 @@ class Flowy {
   }
   
   moveBlock(event: MouseEvent | TouchEvent): void {
-      let mouse_x: number;
-      let mouse_y: number;
+    let mouse_x: number;
+    let mouse_y: number;
 
-        if ('targetTouches' in event) {
-            mouse_x = event.targetTouches[0].clientX;
-            mouse_y = event.targetTouches[0].clientY;
-        } else {
-            mouse_x = event.clientX;
-            mouse_y = event.clientY;
-        }
-
-        if (this.dragblock) {
-            // Code from the original moveBlock function, with appropriate changes made to work with the Flowy class
-        }
-
-        if (this.active) {
-            this.drag.style.left = `${mouse_x - this.dragx}px`;
-            this.drag.style.top = `${mouse_y - this.dragy}px`;
-        } else if (this.rearrange) {
-            this.drag.style.left = `${mouse_x - this.dragx - (window.scrollX + this.absx) + this.canvas_div.scrollLeft}px`;
-            this.drag.style.top = `${mouse_y - this.dragy - (window.scrollY + this.absy) + this.canvas_div.scrollTop}px`;
-            this.blockstemp.filter(a => a.id === parseInt(this.drag.querySelector(".blockid").value)).x = (this.drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(this.drag).width) / 2) + this.canvas_div.scrollLeft;
-            this.blockstemp.filter(a => a.id === parseInt(this.drag.querySelector(".blockid").value)).y = (this.drag.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(this.drag).height) / 2) + this.canvas_div.scrollTop;
-        }
-
-        if (this.active || this.rearrange) {
-            // Code from the original moveBlock function, with appropriate changes made to work with the Flowy class
-        }
+    if ('targetTouches' in event) {
+      mouse_x = event.targetTouches[0].clientX;
+      mouse_y = event.targetTouches[0].clientY;
+    } else {
+      mouse_x = event.clientX;
+      mouse_y = event.clientY;
     }
-}
 
-        
+    if (this.dragblock) {
+      this.rearrange = true;
+      this.drag.classList.add("dragging");
+      const blockid = parseInt(this.drag.querySelector(".blockid").value);
+      const prevblock = this.blocks.filter(a => a.id === blockid)[0].parent;
+      this.blockstemp.push(this.blocks.filter(a => a.id === blockid)[0]);
+      this.blocks = this.blocks.filter(e => e.id !== blockid);
+
+      if (blockid !== 0) {
+          document.querySelector(".arrowid[value='" + blockid + "']").parentNode.remove();
+      }
+
+      let layer = this.blocks.filter(a => a.parent === blockid);
+      let flag = false;
+      let foundids = [];
+      let allids = [];
+
+      while (!flag) {
+          for (let i = 0; i < layer.length; i++) {
+              if (layer[i] !== blockid) {
+                  this.blockstemp.push(this.blocks.filter(a => a.id === layer[i].id)[0]);
+                  const blockParent = document.querySelector(".blockid[value='" + layer[i].id + "']").parentNode;
+                  const arrowParent = document.querySelector(".arrowid[value='" + layer[i].id + "']").parentNode;
+                  blockParent.style.left = `${(blockParent.getBoundingClientRect().left + window.scrollX) - (this.drag.getBoundingClientRect().left + window.scrollX)}px`;
+                  blockParent.style.top = `${(blockParent.getBoundingClientRect().top + window.scrollY) - (this.drag.getBoundingClientRect().top + window.scrollY)}px`;
+                  arrowParent.style.left = `${(arrowParent.getBoundingClientRect().left + window.scrollX) - (this.drag.getBoundingClientRect().left + window.scrollX)}px`;
+                  arrowParent.style.top = `${(arrowParent.getBoundingClientRect().top + window.scrollY) - (this.drag.getBoundingClientRect().top + window.scrollY)}px`;
+                  this.drag.appendChild(blockParent);
+                  this.drag.appendChild(arrowParent);
+                  foundids.push(layer[i].id);
+                  allids.push(layer[i].id);
+              }
+          }
+
+          if (foundids.length === 0) {
+              flag = true;
+          } else {
+              layer = this.blocks.filter(a => foundids.includes(a.parent));
+              foundids = [];
+          }
+      }
+
+      for (let i = 0; i < this.blocks.filter(a => a.parent === blockid).length; i++) {
+        const blocknumber = this.blocks.filter(a => a.parent === blockid)[i];
+        this.blocks = this.blocks.filter(e => e.id !== blocknumber);
+      }
+
+      for (let i = 0; i < allids.length; i++) {
+        const blocknumber = allids[i];
+        this.blocks = this.blocks.filter(e => e.id !== blocknumber);
+      }
+
+      if (this.blocks.length > 1) {
+        this.rearrangeMe();
+      }
+
+      this.dragblock = false;
+    }
+
+
+    if (this.active) {
+      this.drag.style.left = `${mouse_x - this.dragx}px`;
+      this.drag.style.top = `${mouse_y - this.dragy}px`;
+    } else if (this.rearrange) {
+      this.drag.style.left = `${mouse_x - this.dragx - (window.scrollX + this.absx) + this.canvas_div.scrollLeft}px`;
+      this.drag.style.top = `${mouse_y - this.dragy - (window.scrollY + this.absy) + this.canvas_div.scrollTop}px`;
+      this.blockstemp.filter(a => a.id === parseInt(this.drag.querySelector(".blockid").value)).x = (this.drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(this.drag).width) / 2) + this.canvas_div.scrollLeft;
+      this.blockstemp.filter(a => a.id === parseInt(this.drag.querySelector(".blockid").value)).y = (this.drag.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(this.drag).height) / 2) + this.canvas_div.scrollTop;
+    }
+
+    if (this.active || this.rearrange) {
+      if (this.active) {
+        this.drag.style.left = `${this.mouse_x - this.dragx}px`;
+        this.drag.style.top = `${this.mouse_y - this.dragy}px`;
+      } else if (this.rearrange) {
+        this.drag.style.left = `${this.mouse_x - this.dragx - (window.scrollX + this.absx) + this.canvas_div.scrollLeft}px`;
+        this.drag.style.top = `${this.mouse_y - this.dragy - (window.scrollY + this.absy) + this.canvas_div.scrollTop}px`;
+        this.blockstemp.filter(a => a.id === parseInt(this.drag.querySelector(".blockid").value)).x = (this.drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(this.drag).width) / 2) + this.canvas_div.scrollLeft;
+        this.blockstemp.filter(a => a.id === parseInt(this.drag.querySelector(".blockid").value)).y = (this.drag.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(this.drag).height) / 2) + this.canvas_div.scrollTop;
+      }
+
+      if (this.mouse_x > this.canvas_div.getBoundingClientRect().width + this.canvas_div.getBoundingClientRect().left - 10 && this.mouse_x < this.canvas_div.getBoundingClientRect().width + this.canvas_div.getBoundingClientRect().left + 10) {
+        this.canvas_div.scrollLeft += 10;
+      } else if (this.mouse_x < this.canvas_div.getBoundingClientRect().left + 10 && this.mouse_x > this.canvas_div.getBoundingClientRect().left - 10) {
+        this.canvas_div.scrollLeft -= 10;
+      } else if (this.mouse_y > this.canvas_div.getBoundingClientRect().height + this.canvas_div.getBoundingClientRect().top - 10 && this.mouse_y < this.canvas_div.getBoundingClientRect().height + this.canvas_div.getBoundingClientRect().top + 10) {
+        this.canvas_div.scrollTop += 10;
+      } else if (this.mouse_y < this.canvas_div.getBoundingClientRect().top + 10 && this.mouse_y > this.canvas_div.getBoundingClientRect().top - 10) {
+        this.canvas_div.scrollLeft -= 10;
+      }
+
+      const xpos = (this.drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(this.drag).width) / 2) + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left;
+      const ypos = (this.drag.getBoundingClientRect().top + window.scrollY) + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top;
+      const blocko = this.blocks.map(a => a.id);
+
+      for (let i = 0; i < this.blocks.length; i++) {
+        if (this.checkAttach(blocko[i])) {
+          document.querySelector(".blockid[value='" + blocko[i] + "']").parentNode.appendChild(document.querySelector(".indicator"));
+          document.querySelector(".indicator").style.left = `${(document.querySelector(".blockid[value='" + blocko[i] + "']").parentNode.offsetWidth / 2) - 5}px`;
+          document.querySelector(".indicator").style.top = `${document.querySelector(".blockid[value='" + blocko[i] + "']").parentNode.offsetHeight}px`;
+          document.querySelector(".indicator").classList.remove("invisible");
+          break;
+        } else if (i === this.blocks.length - 1) {
+          if (!document.querySelector(".indicator").classList.contains("invisible")) {
+            document.querySelector(".indicator").classList.add("invisible");
+          }
+        }
+      }
+    }
+  }
+  
+  checkOffset(): void {
+    let offsetleftX = this.blocks.map(a => a.x);
+    const widths = this.blocks.map(a => a.width);
+    const mathmin = offsetleftX.map(function(item, index) {
+        return item - (widths[index] / 2);
+    });
+    const offsetleft = Math.min.apply(Math, mathmin);
+
+    if (offsetleft < (this.canvas_div.getBoundingClientRect().left + window.scrollX - this.absx)) {
+      const blocko = this.blocks.map(a => a.id);
+
+      for (let w = 0; w < this.blocks.length; w++) {
+        document.querySelector(".blockid[value='" + this.blocks.filter(a => a.id === blocko[w])[0].id + "']").parentNode.style.left = `${this.blocks.filter(a => a.id === blocko[w])[0].x - (this.blocks.filter(a => a.id === blocko[w])[0].width / 2) - offsetleft + this.canvas_div.getBoundingClientRect().left - this.absx + 20}px`;
+
+        if (this.blocks.filter(a => a.id === blocko[w])[0].parent !== -1) {
+            const arrowblock = this.blocks.filter(a => a.id === blocko[w])[0];
+            const arrowx = arrowblock.x - this.blocks.filter(a => a.id === this.blocks.filter(a => a.id === blocko[w])[0].parent)[0].x;
+
+            if (arrowx < 0) {
+                document.querySelector('.arrowid[value="' + blocko[w] + '"]').parentNode.style.left = `${(arrowblock.x - offsetleft + 20 - 5) + this.canvas_div.getBoundingClientRect().left - this.absx}px`;
+            } else {
+                document.querySelector('.arrowid[value="' + blocko[w] + '"]').parentNode.style.left = `${this.blocks.filter(id => id.id === this.blocks.filter(a => a.id === blocko[w])[0].parent)[0].x - 20 - offsetleft + this.canvas_div.getBoundingClientRect().left - this.absx + 20}px`;
+            }
+        }
+      }
+
+      for (let w = 0; w < this.blocks.length; w++) {
+        this.blocks[w].x = (document.querySelector(".blockid[value='" + this.blocks[w].id + "']").parentNode.getBoundingClientRect().left + window.scrollX) + (this.canvas_div.scrollLeft) + (parseInt(window.getComputedStyle(document.querySelector(".blockid[value='" + this.blocks[w].id + "']").parentNode).width) / 2) - 20 - this.canvas_div.getBoundingClientRect().left;
+      }
+    }
+  }
+  
+  rearrangeMe(): void {
+    const paddingx = 40;
+    const paddingy = 100;
+    const result = this.blocks.map(a => a.parent);
+
+    for (let z = 0; z < result.length; z++) {
+      if (result[z] === -1) {
+        z++;
+      }
+      let totalwidth = 0;
+      let totalremove = 0;
+      let maxheight = 0;
+
+      for (let w = 0; w < this.blocks.filter(id => id.parent === result[z]).length; w++) {
+        const children = this.blocks.filter(id => id.parent === result[z])[w];
+
+        if (this.blocks.filter(id => id.parent === children.id).length === 0) {
+            children.childwidth = 0;
+        }
+        if (children.childwidth > children.width) {
+            if (w === this.blocks.filter(id => id.parent === result[z]).length - 1) {
+                totalwidth += children.childwidth;
+            } else {
+                totalwidth += children.childwidth + paddingx;
+            }
+        } else {
+            if (w === this.blocks.filter(id => id.parent === result[z]).length - 1) {
+                totalwidth += children.width;
+            } else {
+                totalwidth += children.width + paddingx;
+            }
+        }
+      }
+
+      if (result[z] !== -1) {
+        this.blocks.filter(a => a.id === result[z])[0].childwidth = totalwidth;
+      }
+
+      for (let w = 0; w < this.blocks.filter(id => id.parent === result[z]).length; w++) {
+        const children = this.blocks.filter(id => id.parent === result[z])[w];
+        const r_block = document.querySelector(".blockid[value='" + children.id + "']").parentNode;
+        const r_array = this.blocks.filter(id => id.id === result[z]);
+
+        r_block.style.top = `${r_array.y + paddingy + this.canvas_div.getBoundingClientRect().top - this.absy}px`;
+        r_array.y = r_array.y + paddingy;
+
+        if (children.childwidth > children.width) {
+            r_block.style.left = `${r_array[0].x - (totalwidth / 2) + totalremove + (children.childwidth / 2) - (children.width / 2) - (this.absx + window.scrollX) + this.canvas_div.getBoundingClientRect().left}px`;
+            children.x = r_array[0].x - (totalwidth / 2) + totalremove + (children.childwidth / 2);
+            totalremove += children.childwidth + paddingx;
+        } else {
+            r_block.style.left = `${r_array[0].x - (totalwidth / 2) + totalremove - (this.absx + window.scrollX) + this.canvas_div.getBoundingClientRect().left}px`;
+            children.x = r_array[0].x - (totalwidth / 2) + totalremove + (children.width / 2);
+            totalremove += children.width + paddingx;
+        }
+
+        const arrowblock = this.blocks.filter(a => a.id === children.id)[0];
+        const arrowx = arrowblock.x - this.blocks.filter(a => a.id === children.parent)[0].x + 20;
+        const arrowy = paddingy;
+        this.updateArrow(arrowblock, arrowx, arrowy, children);
+      }
+    }
+  }
+  
+  blockReleased(): void {
+    this.release();
+  }
+
+  blockSnap(drag: HTMLElement, first: boolean, parent: number): boolean {
+    return this.snapping(drag, first, parent);
+  }
+
+  beforeDelete(drag: HTMLElement, parent: number): boolean {
+    return this.rearrange(drag, parent);
+  }
+
+  addEventListenerMulti(type: string, listener: EventListenerOrEventListenerObject, capture: boolean, selector: string): void {
+    const nodes = document.querySelectorAll(selector);
+    for (let i = 0; i < nodes.length; i++) {
+        nodes[i].addEventListener(type, listener, capture);
+    }
+  }
+
+  removeEventListenerMulti(type: string, listener: EventListenerOrEventListenerObject, capture: boolean, selector: string): void {
+    const nodes = document.querySelectorAll(selector);
+    for (let i = 0; i < nodes.length; i++) {
+        nodes[i].removeEventListener(type, listener, capture);
+    }
+  }
+}
