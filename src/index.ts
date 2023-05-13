@@ -866,5 +866,68 @@ class Flowy {
       }
     }
   }
+  
+  rearrangeMe(): void {
+    const paddingx = 40;
+    const paddingy = 100;
+    const result = this.blocks.map(a => a.parent);
 
+    for (let z = 0; z < result.length; z++) {
+      if (result[z] === -1) {
+        z++;
+      }
+      let totalwidth = 0;
+      let totalremove = 0;
+      let maxheight = 0;
+
+      for (let w = 0; w < this.blocks.filter(id => id.parent === result[z]).length; w++) {
+        const children = this.blocks.filter(id => id.parent === result[z])[w];
+
+        if (this.blocks.filter(id => id.parent === children.id).length === 0) {
+            children.childwidth = 0;
+        }
+        if (children.childwidth > children.width) {
+            if (w === this.blocks.filter(id => id.parent === result[z]).length - 1) {
+                totalwidth += children.childwidth;
+            } else {
+                totalwidth += children.childwidth + paddingx;
+            }
+        } else {
+            if (w === this.blocks.filter(id => id.parent === result[z]).length - 1) {
+                totalwidth += children.width;
+            } else {
+                totalwidth += children.width + paddingx;
+            }
+        }
+      }
+
+      if (result[z] !== -1) {
+        this.blocks.filter(a => a.id === result[z])[0].childwidth = totalwidth;
+      }
+
+      for (let w = 0; w < this.blocks.filter(id => id.parent === result[z]).length; w++) {
+        const children = this.blocks.filter(id => id.parent === result[z])[w];
+        const r_block = document.querySelector(".blockid[value='" + children.id + "']").parentNode;
+        const r_array = this.blocks.filter(id => id.id === result[z]);
+
+        r_block.style.top = `${r_array.y + paddingy + this.canvas_div.getBoundingClientRect().top - this.absy}px`;
+        r_array.y = r_array.y + paddingy;
+
+        if (children.childwidth > children.width) {
+            r_block.style.left = `${r_array[0].x - (totalwidth / 2) + totalremove + (children.childwidth / 2) - (children.width / 2) - (this.absx + window.scrollX) + this.canvas_div.getBoundingClientRect().left}px`;
+            children.x = r_array[0].x - (totalwidth / 2) + totalremove + (children.childwidth / 2);
+            totalremove += children.childwidth + paddingx;
+        } else {
+            r_block.style.left = `${r_array[0].x - (totalwidth / 2) + totalremove - (this.absx + window.scrollX) + this.canvas_div.getBoundingClientRect().left}px`;
+            children.x = r_array[0].x - (totalwidth / 2) + totalremove + (children.width / 2);
+            totalremove += children.width + paddingx;
+        }
+
+        const arrowblock = this.blocks.filter(a => a.id === children.id)[0];
+        const arrowx = arrowblock.x - this.blocks.filter(a => a.id === children.parent)[0].x + 20;
+        const arrowy = paddingy;
+        this.updateArrow(arrowblock, arrowx, arrowy, children);
+      }
+    }
+  }
 }
