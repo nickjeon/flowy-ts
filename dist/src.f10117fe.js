@@ -578,6 +578,38 @@ var Flowy = /** @class */function () {
     this.rearrangeMe();
     this.checkOffset();
   };
+  Flowy.prototype.touchblock = function (event) {
+    var dragblock = false;
+    var targetElement = event.target;
+    if (hasParentClass(targetElement, "block")) {
+      var theblock = targetElement.closest(".block");
+      var mouse_x = void 0;
+      var mouse_y = void 0;
+      if ('targetTouches' in event) {
+        mouse_x = event.targetTouches[0].clientX;
+        mouse_y = event.targetTouches[0].clientY;
+      } else {
+        mouse_x = event.clientX;
+        mouse_y = event.clientY;
+      }
+      if (event.type !== "mouseup" && hasParentClass(targetElement, "block")) {
+        if ('which' in event && event.which !== 3) {
+          if (!active && !rearrange) {
+            dragblock = true;
+            drag = theblock;
+            dragx = mouse_x - (drag.getBoundingClientRect().left + window.scrollX);
+            dragy = mouse_y - (drag.getBoundingClientRect().top + window.scrollY);
+          }
+        }
+      }
+    }
+  };
+  Flowy.prototype.hasParentClass = function (element, classname) {
+    if (element.className) {
+      if (element.className.split(' ').indexOf(classname) >= 0) return true;
+    }
+    return element.parentNode instanceof HTMLElement && this.hasParentClass(element.parentNode, classname);
+  };
   return Flowy;
 }();
 },{}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
