@@ -834,4 +834,37 @@ class Flowy {
       }
     }
   }
+  
+  checkOffset(): void {
+    let offsetleftX = this.blocks.map(a => a.x);
+    const widths = this.blocks.map(a => a.width);
+    const mathmin = offsetleftX.map(function(item, index) {
+        return item - (widths[index] / 2);
+    });
+    const offsetleft = Math.min.apply(Math, mathmin);
+
+    if (offsetleft < (this.canvas_div.getBoundingClientRect().left + window.scrollX - this.absx)) {
+      const blocko = this.blocks.map(a => a.id);
+
+      for (let w = 0; w < this.blocks.length; w++) {
+        document.querySelector(".blockid[value='" + this.blocks.filter(a => a.id === blocko[w])[0].id + "']").parentNode.style.left = `${this.blocks.filter(a => a.id === blocko[w])[0].x - (this.blocks.filter(a => a.id === blocko[w])[0].width / 2) - offsetleft + this.canvas_div.getBoundingClientRect().left - this.absx + 20}px`;
+
+        if (this.blocks.filter(a => a.id === blocko[w])[0].parent !== -1) {
+            const arrowblock = this.blocks.filter(a => a.id === blocko[w])[0];
+            const arrowx = arrowblock.x - this.blocks.filter(a => a.id === this.blocks.filter(a => a.id === blocko[w])[0].parent)[0].x;
+
+            if (arrowx < 0) {
+                document.querySelector('.arrowid[value="' + blocko[w] + '"]').parentNode.style.left = `${(arrowblock.x - offsetleft + 20 - 5) + this.canvas_div.getBoundingClientRect().left - this.absx}px`;
+            } else {
+                document.querySelector('.arrowid[value="' + blocko[w] + '"]').parentNode.style.left = `${this.blocks.filter(id => id.id === this.blocks.filter(a => a.id === blocko[w])[0].parent)[0].x - 20 - offsetleft + this.canvas_div.getBoundingClientRect().left - this.absx + 20}px`;
+            }
+        }
+      }
+
+      for (let w = 0; w < this.blocks.length; w++) {
+        this.blocks[w].x = (document.querySelector(".blockid[value='" + this.blocks[w].id + "']").parentNode.getBoundingClientRect().left + window.scrollX) + (this.canvas_div.scrollLeft) + (parseInt(window.getComputedStyle(document.querySelector(".blockid[value='" + this.blocks[w].id + "']").parentNode).width) / 2) - 20 - this.canvas_div.getBoundingClientRect().left;
+      }
+    }
+  }
+
 }
