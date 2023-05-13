@@ -448,6 +448,136 @@ var Flowy = /** @class */function () {
       document.querySelector(".arrowid[value=\"".concat(children.id, "\"]")).parentNode.innerHTML = "<input type=\"hidden\" class=\"arrowid\" value=\"".concat(children.id, "\"><svg preserveaspectratio=\"none\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20 0L20 ").concat(this.paddingy / 2, "L").concat(x, " ").concat(this.paddingy / 2, "L").concat(x, " ").concat(y, "\" stroke=\"#C5CCD0\" stroke-width=\"2px\"/><path d=\"M").concat(x - 5, " ").concat(y - 5, "H").concat(x + 5, "L").concat(x, " ").concat(y, "L").concat(x - 5, " ").concat(y - 5, "Z\" fill=\"#C5CCD0\"/></svg>");
     }
   };
+  Flowy.prototype.snap = function (drag, i, blocko) {
+    if (!this.rearrange) {
+      this.canvas_div.appendChild(drag);
+    }
+    var totalwidth = 0;
+    var totalremove = 0;
+    var maxheight = 0;
+    var parentBlocks = this.blocks.filter(function (id) {
+      return id.parent === blocko[i];
+    });
+    for (var w = 0; w < parentBlocks.length; w++) {
+      var children = parentBlocks[w];
+      if (children.childwidth > children.width) {
+        totalwidth += children.childwidth + this.paddingx;
+      } else {
+        totalwidth += children.width + this.paddingx;
+      }
+    }
+    totalwidth += parseInt(window.getComputedStyle(drag).width);
+    for (var w = 0; w < parentBlocks.length; w++) {
+      var children = parentBlocks[w];
+      var grandparentBlock = this.blocks.filter(function (a) {
+        return a.id === blocko[i];
+      })[0];
+      if (children.childwidth > children.width) {
+        document.querySelector(".blockid[value='".concat(children.id, "']")).parentNode.style.left = grandparentBlock.x - totalwidth / 2 + totalremove + children.childwidth / 2 - children.width / 2 + "px";
+        children.x = grandparentBlock.x - totalwidth / 2 + totalremove + children.childwidth / 2;
+        totalremove += children.childwidth + this.paddingx;
+      } else {
+        document.querySelector(".blockid[value='".concat(children.id, "']")).parentNode.style.left = grandparentBlock.x - totalwidth / 2 + totalremove + "px";
+        children.x = grandparentBlock.x - totalwidth / 2 + totalremove + children.width / 2;
+        totalremove += children.width + this.paddingx;
+      }
+    }
+    var targetBlock = this.blocks.filter(function (id) {
+      return id.id === blocko[i];
+    })[0];
+    drag.style.left = targetBlock.x - totalwidth / 2 + totalremove - (window.scrollX + this.absx) + this.canvas_div.scrollLeft + this.canvas_div.getBoundingClientRect().left + "px";
+    drag.style.top = targetBlock.y + targetBlock.height / 2 + this.paddingy - (window.scrollY + this.absy) + this.canvas_div.getBoundingClientRect().top + "px";
+    if (this.rearrange) {
+      var blockID_1 = parseInt(drag.querySelector(".blockid").value);
+      var blockTemp = this.blockstemp.filter(function (a) {
+        return a.id === blockID_1;
+      })[0];
+      blockTemp.x = drag.getBoundingClientRect().left + window.scrollX + parseInt(window.getComputedStyle(drag).width) / 2 + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left;
+      blockTemp.y = drag.getBoundingClientRect().top + window.scrollY + parseInt(window.getComputedStyle(drag).height) / 2 + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top;
+      blockTemp.parent = blocko[i];
+      for (var w = 0; w < this.blockstemp.length; w++) {
+        if (this.blockstemp[w].id !== blockID_1) {
+          var blockParent = document.querySelector(".blockid[value='".concat(this.blockstemp[w].id, "']")).parentNode;
+          var arrowParent = document.querySelector(".arrowid[value='".concat(this.blockstemp[w].id, "']")).parentNode;
+          blockParent.style.left = blockParent.getBoundingClientRect().left + window.scrollX - (window.scrollX + canvas_div.getBoundingClientRect().left) + canvas_div.scrollLeft + "px";
+          window.scrollX + this.canvas_div.getBoundingClientRect().left;
+          +this.canvas_div.scrollLeft + "px";
+          blockParent.style.top = blockParent.getBoundingClientRect().top + window.scrollY - (window.scrollY + this.canvas_div.getBoundingClientRect().top) + this.canvas_div.scrollTop + "px";
+          arrowParent.style.left = arrowParent.getBoundingClientRect().left + window.scrollX - (window.scrollX + this.canvas_div.getBoundingClientRect().left) + this.canvas_div.scrollLeft + 20 + "px";
+          arrowParent.style.top = arrowParent.getBoundingClientRect().top + window.scrollY - (window.scrollY + this.canvas_div.getBoundingClientRect().top) + this.canvas_div.scrollTop + "px";
+          this.canvas_div.appendChild(blockParent);
+          this.canvas_div.appendChild(arrowParent);
+          this.blockstemp[w].x = blockParent.getBoundingClientRect().left + window.scrollX + parseInt(window.getComputedStyle(blockParent).width) / 2 + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left;
+          this.blockstemp[w].y = blockParent.getBoundingClientRect().top + window.scrollY + parseInt(window.getComputedStyle(blockParent).height) / 2 + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top;
+        }
+      }
+      this.blocks = this.blocks.concat(this.blockstemp);
+      this.blockstemp = [];
+    } else {
+      this.blocks.push({
+        childwidth: 0,
+        parent: blocko[i],
+        id: parseInt(drag.querySelector(".blockid").value),
+        x: drag.getBoundingClientRect().left + window.scrollX + parseInt(window.getComputedStyle(drag).width) / 2 + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left,
+        y: drag.getBoundingClientRect().top + window.scrollY + parseInt(window.getComputedStyle(drag).height) / 2 + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top,
+        width: parseInt(window.getComputedStyle(drag).width),
+        height: parseInt(window.getComputedStyle(drag).height)
+      });
+    }
+    var arrowblock = this.blocks.filter(function (a) {
+      return a.id === parseInt(drag.querySelector(".blockid").value);
+    })[0];
+    var arrowx = arrowblock.x - targetBlock.x + 20;
+    var arrowy = this.paddingy;
+    this.drawArrow(arrowblock, arrowx, arrowy, blocko[i]);
+    if (targetBlock.parent !== -1) {
+      var flag = false;
+      var idval_1 = blocko[i];
+      while (!flag) {
+        if (this.blocks.filter(function (a) {
+          return a.id === idval_1;
+        })[0].parent === -1) {
+          flag = true;
+        } else {
+          var zwidth = 0;
+          var idvalBlocks = this.blocks.filter(function (id) {
+            return id.parent === idval_1;
+          });
+          for (var w = 0; w < idvalBlocks.length; w++) {
+            var children = idvalBlocks[w];
+            if (children.childwidth > children.width) {
+              if (w === idvalBlocks.length - 1) {
+                zwidth += children.childwidth;
+              } else {
+                zwidth += children.childwidth + this.paddingx;
+              }
+            } else {
+              if (w === idvalBlocks.length - 1) {
+                zwidth += children.width;
+              } else {
+                zwidth += children.width + this.paddingx;
+              }
+            }
+          }
+          this.blocks.filter(function (a) {
+            return a.id === idval_1;
+          })[0].childwidth = zwidth;
+          idval_1 = this.blocks.filter(function (a) {
+            return a.id === idval_1;
+          })[0].parent;
+        }
+      }
+      this.blocks.filter(function (id) {
+        return id.id === idval_1;
+      })[0].childwidth = totalwidth;
+    }
+    if (this.rearrange) {
+      this.rearrange = false;
+      drag.classList.remove("dragging");
+    }
+    this.rearrangeMe();
+    this.checkOffset();
+  };
   return Flowy;
 }();
 },{}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {

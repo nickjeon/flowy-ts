@@ -547,4 +547,129 @@ class Flowy {
       }H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/></svg>`;
     }
   }
+  
+  snap(drag: HTMLElement, i: number, blocko: Array<number>): void {
+    if (!this.rearrange) {
+        this.canvas_div.appendChild(drag);
+    }
+    let totalwidth = 0;
+    let totalremove = 0;
+    let maxheight = 0;
+    const parentBlocks = this.blocks.filter(id => id.parent === blocko[i]);
+
+    for (let w = 0; w < parentBlocks.length; w++) {
+        const children = parentBlocks[w];
+        if (children.childwidth > children.width) {
+            totalwidth += children.childwidth + this.paddingx;
+        } else {
+            totalwidth += children.width + this.paddingx;
+        }
+    }
+
+    totalwidth += parseInt(window.getComputedStyle(drag).width);
+
+    for (let w = 0; w < parentBlocks.length; w++) {
+        const children = parentBlocks[w];
+        const grandparentBlock = this.blocks.filter(a => a.id === blocko[i])[0];
+
+        if (children.childwidth > children.width) {
+            document.querySelector(`.blockid[value='${children.id}']`).parentNode.style.left = grandparentBlock.x - (totalwidth / 2) + totalremove + (children.childwidth / 2) - (children.width / 2) + "px";
+            children.x = grandparentBlock.x - (totalwidth / 2) + totalremove + (children.childwidth / 2);
+            totalremove += children.childwidth + this.paddingx;
+        } else {
+            document.querySelector(`.blockid[value='${children.id}']`).parentNode.style.left = grandparentBlock.x - (totalwidth / 2) + totalremove + "px";
+            children.x = grandparentBlock.x - (totalwidth / 2) + totalremove + (children.width / 2);
+            totalremove += children.width + this.paddingx;
+        }
+    }
+
+    const targetBlock = this.blocks.filter(id => id.id === blocko[i])[0];
+
+    drag.style.left = targetBlock.x - (totalwidth / 2) + totalremove - (window.scrollX + this.absx) + this.canvas_div.scrollLeft + this.canvas_div.getBoundingClientRect().left + "px";
+    drag.style.top = targetBlock.y + (targetBlock.height / 2) + this.paddingy - (window.scrollY + this.absy) + this.canvas_div.getBoundingClientRect().top + "px";
+
+    if (this.rearrange) {
+        const blockID = parseInt(drag.querySelector(".blockid").value);
+        const blockTemp = this.blockstemp.filter(a => a.id === blockID)[0];
+
+        blockTemp.x = (drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(drag).width) / 2) + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left;
+        blockTemp.y = (drag.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(drag).height) / 2) + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top;
+        blockTemp.parent = blocko[i];
+
+        for (let w = 0; w < this.blockstemp.length; w++) {
+            if (this.blockstemp[w].id !== blockID) {
+                const blockParent = document.querySelector(`.blockid[value='${this.blockstemp[w].id}']`).parentNode;
+                const arrowParent = document.querySelector(`.arrowid[value='${this.blockstemp[w].id}']`).parentNode;
+                
+                blockParent.style.left = (blockParent.getBoundingClientRect().left + window.scrollX) - (window.scrollX + canvas_div.getBoundingClientRect().left) + canvas_div.scrollLeft + "px";
+                window.scrollX + this.canvas_div.getBoundingClientRect().left) + this.canvas_div.scrollLeft + "px";
+                blockParent.style.top = (blockParent.getBoundingClientRect().top + window.scrollY) - (window.scrollY + this.canvas_div.getBoundingClientRect().top) + this.canvas_div.scrollTop + "px";
+                arrowParent.style.left = (arrowParent.getBoundingClientRect().left + window.scrollX) - (window.scrollX + this.canvas_div.getBoundingClientRect().left) + this.canvas_div.scrollLeft + 20 + "px";
+                arrowParent.style.top = (arrowParent.getBoundingClientRect().top + window.scrollY) - (window.scrollY + this.canvas_div.getBoundingClientRect().top) + this.canvas_div.scrollTop + "px";
+                this.canvas_div.appendChild(blockParent);
+                this.canvas_div.appendChild(arrowParent);
+
+                this.blockstemp[w].x = (blockParent.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(blockParent).width) / 2) + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left;
+                this.blockstemp[w].y = (blockParent.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(blockParent).height) / 2) + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top;
+            }
+        }
+        this.blocks = this.blocks.concat(this.blockstemp);
+        this.blockstemp = [];
+    } else {
+        this.blocks.push({
+            childwidth: 0,
+            parent: blocko[i],
+            id: parseInt(drag.querySelector(".blockid").value),
+            x: (drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(drag).width) / 2) + this.canvas_div.scrollLeft - this.canvas_div.getBoundingClientRect().left,
+            y: (drag.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(drag).height) / 2) + this.canvas_div.scrollTop - this.canvas_div.getBoundingClientRect().top,
+            width: parseInt(window.getComputedStyle(drag).width),
+            height: parseInt(window.getComputedStyle(drag).height)
+        });
+    }
+
+    const arrowblock = this.blocks.filter(a => a.id === parseInt(drag.querySelector(".blockid").value))[0];
+    const arrowx = arrowblock.x - targetBlock.x + 20;
+    const arrowy = this.paddingy;
+    this.drawArrow(arrowblock, arrowx, arrowy, blocko[i]);
+
+    if (targetBlock.parent !== -1) {
+        let flag = false;
+        let idval = blocko[i];
+        while (!flag) {
+            if (this.blocks.filter(a => a.id === idval)[0].parent === -1) {
+                flag = true;
+            } else {
+                let zwidth = 0;
+                const idvalBlocks = this.blocks.filter(id => id.parent === idval);
+
+                for (let w = 0; w < idvalBlocks.length; w++) {
+                    const children = idvalBlocks[w];
+                    if (children.childwidth > children.width) {
+                        if (w === idvalBlocks.length - 1) {
+                            zwidth += children.childwidth;
+                        } else {
+                            zwidth += children.childwidth + this.paddingx;
+                        }
+                    } else {
+                        if (w === idvalBlocks.length - 1) {
+                            zwidth += children.width;
+                        } else {
+                            zwidth += children.width + this.paddingx;
+                        }
+                    }
+                }
+                this.blocks.filter(a => a.id === idval)[0].childwidth = zwidth;
+                idval = this.blocks.filter(a => a.id === idval)[0].parent;
+            }
+        }
+        this.blocks.filter(id => id.id === idval)[0].childwidth = totalwidth;
+    }
+
+    if (this.rearrange) {
+        this.rearrange = false;
+        drag.classList.remove("dragging");
+    }
+    this.rearrangeMe();
+    this.checkOffset();
+    }
 }
