@@ -1,5 +1,5 @@
 type FlowyCallback = () => void;
-type SnappingCallback = () => boolean;
+type SnappingCallback = (drag: HTMLElement, first: boolean, parent: number) => boolean;
 type RearrangeCallback = () => boolean;
 
 interface Block {
@@ -55,7 +55,7 @@ class Flowy {
   private el: HTMLElement;
   private grab = (block: HTMLElement | Element) => {};
   private release: FlowyCallback = () => {};
-  private snapping: SnappingCallback = () => true;
+  private snapping: SnappingCallback = (drag: HTMLElement, first: boolean, parent: number) => true;
   private rearrange: RearrangeCallback = () => false;
   
   constructor(
