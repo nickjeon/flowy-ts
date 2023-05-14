@@ -1,6 +1,6 @@
 type FlowyCallback = () => void;
 type SnappingCallback = (drag: HTMLElement, first: boolean, parent: number) => boolean;
-type RearrangeCallback = () => boolean;
+type RearrangeCallback = (drag: HTMLElement, parent: number) => boolean;
 
 interface Block {
   childwidth: number;
@@ -56,7 +56,7 @@ class Flowy {
   private grab = (block: HTMLElement | Element) => {};
   private release: FlowyCallback = () => {};
   private snapping: SnappingCallback = (drag: HTMLElement, first: boolean, parent: number) => true;
-  private rearrange: RearrangeCallback = () => false;
+  private rearrange: RearrangeCallback = (drag: HTMLElement, parent: number) => false;
   
   constructor(
     canvas: HTMLElement,
@@ -249,9 +249,8 @@ class Flowy {
               this.blockSnap(
                 this.drag,
                 false,
-                document.querySelector(`.blockid[value='${blockIds[i]}']`)
-                .parentNode as HTMLElement
-                )
+                document.querySelector(`.blockid[value='${blockIds[i]}']`).parentNode as HTMLElement
+              )
             ) {
               this.snap(this.drag, i, blockIds);
             } else {
