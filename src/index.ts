@@ -246,6 +246,7 @@ class Flowy {
           if (this.checkAttach(blockIds[i])) {
             this.active = false;
             if (
+              this.drag &&
               this.blockSnap(
                 this.drag,
                 false,
@@ -273,6 +274,7 @@ class Flowy {
             break;
           } else if (i === this.blocks.length - 1) {
             if (
+              this.drag &&
               this.beforeDelete(
                 this.drag,
                 this.blocks.filter((id) => id.id === blockIds[i])[0]
@@ -296,6 +298,7 @@ class Flowy {
   }
                       
   checkAttach(id: number): boolean {
+    if (!this.drag) return false;
     const xpos = this.drag.getBoundingClientRect().left +
         window.scrollX +
         parseInt(window.getComputedStyle(this.drag).width) / 2 +
@@ -321,12 +324,12 @@ class Flowy {
     
   removeSelection(): void {
     this.canvasDiv.appendChild(document.querySelector(".indicator"));
-    this.drag.parentNode?.removeChild(this.drag);
+    if (this.drag) this.drag.parentNode?.removeChild(this.drag);
   }
                         
   firstBlock(type: string): void {
-    if (type == "drop") {
-      this.blockSnap(this.drag, true, undefined);
+    if (type == "drop" && this.drag) {
+      this.blockSnap(this.drag, true, NaN);
       this.active = false;
       this.drag.style.top = this.drag.getBoundingClientRect().top +
         window.scrollY -
