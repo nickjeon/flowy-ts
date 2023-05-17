@@ -269,7 +269,7 @@ class Flowy {
           if (this.checkAttach(blockIds[i])) {
             this.active = false;
             this.drag?.classList.remove("dragging");
-            this.snap(this.drag, i, blockIds);
+            if (this.drag) this.snap(this.drag, i, blockIds);
             break;
           } else if (i === this.blocks.length - 1) {
             if (
