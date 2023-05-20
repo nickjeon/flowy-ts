@@ -285,7 +285,7 @@ class Flowy {
               this.snap(this.drag, blockIds.indexOf(this.prevblock), blockIds);
               break;
             } else {
-              this.rearrange = false;
+              this.rearrange = () => false;
               this.tempBlocks = [];
               this.active = false;
               this.removeSelection();
@@ -346,7 +346,7 @@ class Flowy {
       this.blocks.push({
         parent: -1,
         childwidth: 0,
-        id: parseInt(this.drag.querySelector(".blockid").value),
+        id: parseInt(this.drag.querySelector(".blockid")?.value),
         x:
         this.drag.getBoundingClientRect().left +
         window.scrollX +
@@ -362,20 +362,24 @@ class Flowy {
         width: parseInt(window.getComputedStyle(this.drag).width),
         height: parseInt(window.getComputedStyle(this.drag).height),
       });
-    } else if (type == "rearrange") {
+    } else if (type == "rearrange" && this.drag) {
       this.drag.classList.remove("dragging");
-      this.rearrange = false;
+      this.rearrange = () => false;
       for (let w = 0; w < this.tempBlocks.length; w++) {
-        if (
-          this.tempBlocks[w].id !=
-          parseInt(this.drag.querySelector(".blockid").value)
-        ) {
-          const blockParent = document.querySelector(
+        let blockIdElement = this.drag.querySelector(".blockid") as HTMLInputElement;
+        let blockId = blockIdElement ? parseInt(blockIdElement.value) : NaN;
+
+        if (this.tempBlocks[w].id !== blockId) {
+          let blockElement = document.querySelector(
             ".blockid[value='" + this.tempBlocks[w].id + "']"
-            ).parentNode;
-          const arrowParent = document.querySelector(
-            ".arrowid[value='" + this.tempBlocks[w].id + "']"
-            ).parentNode;
+          );
+          const blockParent = blockElement ? blockElement.parentNode : null;
+
+          let arrowElement = document.querySelector(
+              ".arrowid[value='" + this.tempBlocks[w].id + "']"
+          );
+          const arrowParent = arrowElement ? arrowElement.parentNode : null;
+
           blockParent.style.left =
             blockParent.getBoundingClientRect().left +
             window.scrollX -
