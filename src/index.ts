@@ -346,7 +346,7 @@ class Flowy {
       this.blocks.push({
         parent: -1,
         childwidth: 0,
-        id: parseInt(this.drag.querySelector(".blockid").value),
+        id: parseInt(this.drag.querySelector(".blockid")?.value),
         x:
         this.drag.getBoundingClientRect().left +
         window.scrollX +
@@ -362,17 +362,19 @@ class Flowy {
         width: parseInt(window.getComputedStyle(this.drag).width),
         height: parseInt(window.getComputedStyle(this.drag).height),
       });
-    } else if (type == "rearrange") {
+    } else if (type == "rearrange" && this.drag) {
       this.drag.classList.remove("dragging");
-      this.rearrange = false;
+      this.rearrange = () => false;
       for (let w = 0; w < this.tempBlocks.length; w++) {
         if (
           this.tempBlocks[w].id !=
           parseInt(this.drag.querySelector(".blockid").value)
         ) {
-          const blockParent = document.querySelector(
+          let blockElement = document.querySelector(
             ".blockid[value='" + this.tempBlocks[w].id + "']"
-            ).parentNode;
+          );
+        const blockParent = blockElement ? blockElement.parentNode : null;
+
           const arrowParent = document.querySelector(
             ".arrowid[value='" + this.tempBlocks[w].id + "']"
             ).parentNode;
