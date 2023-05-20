@@ -366,18 +366,20 @@ class Flowy {
       this.drag.classList.remove("dragging");
       this.rearrange = () => false;
       for (let w = 0; w < this.tempBlocks.length; w++) {
-        if (
-          this.tempBlocks[w].id !=
-          parseInt(this.drag.querySelector(".blockid").value)
-        ) {
+        let blockIdElement = this.drag.querySelector(".blockid") as HTMLInputElement;
+        let blockId = blockIdElement ? parseInt(blockIdElement.value) : NaN;
+
+        if (this.tempBlocks[w].id !== blockId) {
           let blockElement = document.querySelector(
             ".blockid[value='" + this.tempBlocks[w].id + "']"
           );
-        const blockParent = blockElement ? blockElement.parentNode : null;
+          const blockParent = blockElement ? blockElement.parentNode : null;
 
-          const arrowParent = document.querySelector(
-            ".arrowid[value='" + this.tempBlocks[w].id + "']"
-            ).parentNode;
+          let arrowElement = document.querySelector(
+              ".arrowid[value='" + this.tempBlocks[w].id + "']"
+          );
+          const arrowParent = arrowElement ? arrowElement.parentNode : null;
+
           blockParent.style.left =
             blockParent.getBoundingClientRect().left +
             window.scrollX -
