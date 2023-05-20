@@ -285,7 +285,7 @@ class Flowy {
               this.snap(this.drag, blockIds.indexOf(this.prevblock), blockIds);
               break;
             } else {
-              this.rearrange = false;
+              this.rearrange = () => false;
               this.tempBlocks = [];
               this.active = false;
               this.removeSelection();
