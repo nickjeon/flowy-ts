@@ -1,6 +1,6 @@
 type FlowyCallback = () => void;
-type SnappingCallback = (drag: HTMLElement, first: boolean, parent: number) => boolean;
-type RearrangeCallback = (drag: HTMLElement, parent: number) => boolean;
+type SnappingCallback = (drag: HTMLElement, first: boolean, parent: HTMLElement) => boolean;
+type RearrangeCallback = (drag: HTMLElement, parent: Block) => boolean;
 
 interface Block {
   childwidth: number;
@@ -55,8 +55,8 @@ class Flowy {
   private el: HTMLElement;
   private grab = (block: HTMLElement | Element) => {};
   private release: FlowyCallback = () => {};
-  private snapping: SnappingCallback = (drag: HTMLElement, first: boolean, parent: number) => true;
-  private rearrange: RearrangeCallback = (drag: HTMLElement, parent: number) => false;
+  private snapping: SnappingCallback = (drag: HTMLElement, first: boolean, parent: HTMLElement | null) => true;
+  private rearrange: RearrangeCallback = (drag: HTMLElement, parent: Block) => false;
   
   constructor(
     canvas: HTMLElement,
@@ -245,12 +245,14 @@ class Flowy {
         for (let i = 0; i < this.blocks.length; i++) {
           if (this.checkAttach(blockIds[i])) {
             this.active = false;
+            const blockElement = document.querySelector(`.blockid[value='${blockIds[i]}']`);
+            const parentNode = blockElement?.parentNode as HTMLElement | null;
             if (
               this.drag &&
               this.blockSnap(
                 this.drag,
                 false,
-                document.querySelector(`.blockid[value='${blockIds[i]}']`).parentNode as HTMLElement
+                parentNode
               )
             ) {
               this.snap(this.drag, i, blockIds);
@@ -278,7 +280,7 @@ class Flowy {
               this.beforeDelete(
                 this.drag,
                 this.blocks.filter((id) => id.id === blockIds[i])[0]
-                )
+              )
             ) {
               this.active = false;
               this.drag?.classList.remove("dragging");
@@ -932,11 +934,11 @@ class Flowy {
     this.release();
   }
 
-  blockSnap(drag: HTMLElement, first: boolean, parent: number): boolean {
+  blockSnap(drag: HTMLElement, first: boolean, parent: HTMLElement | null): boolean {
     return this.snapping(drag, first, parent);
   }
 
-  beforeDelete(drag: HTMLElement, parent: number): boolean {
+  beforeDelete(drag: HTMLElement, parent: Block): boolean {
     return this.rearrange(drag, parent);
   }
 
