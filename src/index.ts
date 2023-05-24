@@ -325,13 +325,16 @@ class Flowy {
   }
     
   removeSelection(): void {
-    this.canvasDiv.appendChild(document.querySelector(".indicator"));
+    const indicator = document.querySelector(".indicator");
+    if (indicator instanceof Node) {
+      this.canvasDiv.appendChild(indicator);
+    }
     if (this.drag) this.drag.parentNode?.removeChild(this.drag);
   }
                         
   firstBlock(type: string): void {
     if (type == "drop" && this.drag) {
-      this.blockSnap(this.drag, true, NaN);
+      this.blockSnap(this.drag, true, null);
       this.active = false;
       this.drag.style.top = this.drag.getBoundingClientRect().top +
         window.scrollY -
