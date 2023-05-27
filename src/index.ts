@@ -678,7 +678,7 @@ class Flowy {
     let dragblock = false;
     const targetElement = event.target as HTMLElement;
     
-    if (hasParentClass(targetElement, "block")) {
+    if (this.hasParentClass(targetElement, "block")) {
       const theblock = targetElement.closest(".block") as HTMLElement;
       let mouse_x: number;
       let mouseY: number;
@@ -691,13 +691,13 @@ class Flowy {
         mouseY = (event as MouseEvent).clientY;
       }
       
-      if (event.type !== "mouseup" && hasParentClass(targetElement, "block")) {
+      if (event.type !== "mouseup" && this.hasParentClass(targetElement, "block")) {
         if ('which' in event && (event as MouseEvent).which !== 3) {
-          if (!active && !rearrange) {
+          if (!this.active && !this.rearrange()) {
             dragblock = true;
-            drag = theblock;
-            dragx = mouse_x - (drag.getBoundingClientRect().left + window.scrollX);
-            dragy = mouseY - (drag.getBoundingClientRect().top + window.scrollY);
+            this.drag = theblock;
+            this.dragX = mouse_x - (this.drag.getBoundingClientRect().left + window.scrollX);
+            this.dragY = mouseY - (this.drag.getBoundingClientRect().top + window.scrollY);
           }
         }
       }
