@@ -393,6 +393,20 @@ class Flowy {
                   1 :
                 0; 
               blockParent.style.top = `${blockParentTop}px`;
+              this.canvasDiv.appendChild(blockParent);
+              
+              tempBlock.x =
+                blockParentLeft +
+                blockParent.offsetWidth / 2 +
+                this.canvasDiv.scrollLeft -
+                this.canvasDiv.getBoundingClientRect().left -
+                1;
+              tempBlock.y =
+                blockParentTop +
+                blockParent.offsetHeight / 2 +
+                this.canvasDiv.scrollTop -
+                this.canvasDiv.getBoundingClientRect().top -
+                1;
             }
 
             const arrowElement = document.querySelector(`.arrowid[value='${blockIdValue}']`);
@@ -414,22 +428,8 @@ class Flowy {
                   1 :
                 0; 
               arrowParent.style.top = `${arrowParentTop}px`;
+              this.canvasDiv.appendChild(arrowParent);
             }
-
-            this.canvasDiv.appendChild(blockParent);
-            this.canvasDiv.appendChild(arrowParent);
-            tempBlock.x =
-              blockParentLeft +
-              parseInt(blockParent.offsetWidth) / 2 +
-              this.canvasDiv.scrollLeft -
-              this.canvasDiv.getBoundingClientRect().left -
-              1;
-            tempBlock.y =
-              blockParentTop +
-              parseInt(blockParent.offsetHeight) / 2 +
-              this.canvasDiv.scrollTop -
-              this.canvasDiv.getBoundingClientRect().top -
-              1;
           }
         }
       this.tempBlocks.filter((a) => a.id == 0)[0].x =
