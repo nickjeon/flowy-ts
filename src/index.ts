@@ -375,42 +375,46 @@ class Flowy {
           if (tempBlock.id !== blockId) {
             const blockIdValue = tempBlock.id;
             const blockElement = document.querySelector(`.blockid[value='${blockIdValue}']`);
-            const blockParent = blockElement ? blockElement.parentNode : null;
+            const blockParent = blockElement ? blockElement.parentNode as HTMLElement : null;
+            
+            if (blockParent) {
+              const blockParentLeft = blockParent ?
+                blockParent.getBoundingClientRect().left +
+                  this.canvasDiv.scrollLeft -
+                  this.absX -
+                  1 :
+                0; 
+              blockParent.style.left = `${blockParentLeft}px`;
+
+              const blockParentTop = blockParent ?
+                blockParent.getBoundingClientRect().top +
+                  this.canvasDiv.scrollTop -
+                  this.absY -
+                  1 :
+                0; 
+              blockParent.style.top = `${blockParentTop}px`;
+            }
 
             const arrowElement = document.querySelector(`.arrowid[value='${blockIdValue}']`);
-            const arrowParent = arrowElement ? arrowElement.parentNode : null;
+            const arrowParent = arrowElement ? arrowElement.parentNode as HTMLElement : null;
 
-            const blockParentLeft = blockParent ?
-              blockParent.getBoundingClientRect().left +
-                this.canvasDiv.scrollLeft -
-                this.absX -
-                1 :
-              0; 
-            blockParent.style.left = `${blockParentLeft}px`;
+            if (arrowParent) {
+              const arrowParentLeft = arrowParent ?
+                arrowParent.getBoundingClientRect().left +
+                  this.canvasDiv.scrollLeft -
+                  this.absX -
+                  1 :
+                0; 
+              arrowParent.style.left = `${arrowParentLeft}px`;
 
-            const blockParentTop = blockParent ?
-              blockParent.getBoundingClientRect().top +
-                this.canvasDiv.scrollTop -
-                this.absY -
-                1 :
-              0; 
-            blockParent.style.top = `${blockParentTop}px`;
-
-            const arrowParentLeft = arrowParent ?
-              arrowParent.getBoundingClientRect().left +
-                this.canvasDiv.scrollLeft -
-                this.absX -
-                1 :
-              0; 
-            arrowParent.style.left = `${arrowParentLeft}px`;
-
-            const arrowParentTop = arrowParent ?
-              arrowParent.getBoundingClientRect().top +
-                this.canvasDiv.scrollTop -
-                this.absY -
-                1 :
-              0; 
-            arrowParent.style.top = `${arrowParentTop}px`;
+              const arrowParentTop = arrowParent ?
+                arrowParent.getBoundingClientRect().top +
+                  this.canvasDiv.scrollTop -
+                  this.absY -
+                  1 :
+                0; 
+              arrowParent.style.top = `${arrowParentTop}px`;
+            }
 
             this.canvasDiv.appendChild(blockParent);
             this.canvasDiv.appendChild(arrowParent);
