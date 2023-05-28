@@ -451,111 +451,122 @@ class Flowy {
                               
   drawArrow(arrow: Block, x: number, y: number, id: number): void {
     if (x < 0) {
-      const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement;
+      const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement | null;
       const blockIdValue = blockIdElement ? blockIdElement.value : "";
 
-      this.canvasDiv.innerHTML += `<div class="arrowblock">
-        <input type="hidden" class="arrowid" value="${blockIdValue}">
-          <svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M${this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5} 0L${this.blocks.filter((a) => a.id == id)[0].x - arrow.x + 5} ${this.paddingY / 2
-      }L5 ${
-        this.paddingY / 2
-      }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
-        y - 5
-      }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
-      
-      const arrowSelector = `.arrowid[value="${blockIdElement?.value}"]`;
-      const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
+      if (blockIdElement) {
+        this.canvasDiv.innerHTML += `<div class="arrowblock">
+          <input type="hidden" class="arrowid" value="${blockIdValue}">
+            <svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M${this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5} 0L${this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5} ${this.paddingY / 2
+        }L5 ${
+          this.paddingY / 2
+        }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
+          y - 5
+        }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
 
-      if (arrowElement) {
-        const parentNode = arrowElement.parentNode as HTMLElement;
-        const left =
-          arrow.x -
-          5 -
-          (this.absX + window.scrollX) +
-          this.canvasDiv.scrollLeft +
-          this.canvasDiv.getBoundingClientRect().left +
-          "px";
+        const arrowSelector = `.arrowid[value="${blockIdValue}"]`;
+        const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
 
-        parentNode.style.left = left;
+        if (arrowElement) {
+          const parentNode = arrowElement.parentNode as HTMLElement;
+          const left =
+            arrow.x -
+            5 -
+            (this.absX + window.scrollX) +
+            this.canvasDiv.scrollLeft +
+            this.canvasDiv.getBoundingClientRect().left +
+            "px";
+
+          parentNode.style.left = left;
+        }
       }
     } else {
-      this.canvasDiv.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${
-        this.drag.querySelector(".blockid").value
-          }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0L20 ${
+      const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement | null;
+      const blockIdValue = blockIdElement ? blockIdElement.value : "";
+
+      if (blockIdElement) {
+        this.canvasDiv.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${blockIdValue}"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0L20 ${
           this.paddingY / 2
         }L${x} ${
           this.paddingY / 2
         }L${x} ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M${x - 5} ${
           y - 5
         }H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
-      document.querySelector(
-        `.arrowid[value="${parseInt(
-          this.drag.querySelector(".blockid").value
-          )}"]`
-        ).parentNode.style.left =
-          this.blocks.filter((a) => a.id == id)[0].x -
-          20 -
-          (this.absX + window.scrollX) +
-          this.canvasDiv.scrollLeft +
-          this.canvasDiv.getBoundingClientRect().left +
+
+        const arrowSelector = `.arrowid[value="${blockIdValue}"]`;
+        const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
+
+        if (arrowElement) {
+          const parentNode = arrowElement.parentNode as HTMLElement;
+          const left =
+            this.blocks.filter((a) => a.id == id)[0].x -
+            20 -
+            (this.absX + window.scrollX) +
+            this.canvasDiv.scrollLeft +
+            this.canvasDiv.getBoundingClientRect().left +
+            "px";
+
+          parentNode.style.left = left;
+        }
+      }
+    }
+
+    const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement | null;
+    const blockIdValue = blockIdElement ? blockIdElement.value : "";
+
+    if (blockIdElement) {
+      const arrowSelector = `.arrowid[value="${parseInt(blockIdValue)}"]`;
+      const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
+
+      if (arrowElement) {
+        const parentNode = arrowElement.parentNode as HTMLElement;
+        const top =
+          this.blocks.filter((a) => a.id == id)[0].y +
+          this.blocks.filter((a) => a.id == id)[0].height / 2 +
+          this.canvasDiv.getBoundingClientRect().top -
+          this.absY +
           "px";
+
+        parentNode.style.top = top;
+      }
     }
-    document.querySelector(
-      `.arrowid[value="${parseInt(this.drag.querySelector(".blockid").value)}"]`
-      ).parentNode.style.top =
-      this.blocks.filter((a) => a.id == id)[0].y +
-      this.blocks.filter((a) => a.id == id)[0].height / 2 +
-      this.canvasDiv.getBoundingClientRect().top -
-      this.absY +
-      "px";
-    }
+  }
+
       
-  updateArrow(arrow, x, y, children): void {
+  updateArrow(arrow: Block, x: number, y: number, children: Block): void {
+  const arrowSelector = `.arrowid[value="${children.id}"]`;
+  const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
+
+  if (arrowElement && arrowElement.parentNode instanceof HTMLElement) {
     if (x < 0) {
-      document.querySelector(
-        `.arrowid[value="${children.id}"]`
-        ).parentNode.style.left =
+      arrowElement.parentNode.style.left =
         arrow.x -
         5 -
         (this.absX + window.scrollX) +
         this.canvasDiv.getBoundingClientRect().left +
         "px";
-      document.querySelector(
-        `.arrowid[value="${children.id}"]`
-        ).parentNode.innerHTML = `<input type="hidden" class="arrowid" value="${
-          children.id
-        }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M${
-        this.blocks.filter((id) => id.id == children.parent)[0].x - arrow.x + 5
-      } 0L${
-        this.blocks.filter((id) => id.id == children.parent)[0].x - arrow.x + 5
-      } ${this.paddingY / 2}L5 ${
-        this.paddingY / 2
-      }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
-        y - 5
-      }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg>`;
+      arrowElement.parentNode.innerHTML = `<input type="hidden" class="arrowid" value="${children.id}">
+        <svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M${this.blocks.filter((id) => id.id == children.parent)[0].x - arrow.x + 5} 0L${this.blocks.filter((id) => id.id == children.parent)[0].x - arrow.x + 5} ${this.paddingY / 2}L5 ${this.paddingY / 2}L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/>
+          <path d="M0 ${y - 5}H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/>
+        </svg>`;
     } else {
-      document.querySelector(
-        `.arrowid[value="${children.id}"]`
-        ).parentNode.style.left =
+      arrowElement.parentNode.style.left =
         this.blocks.filter((id) => id.id == children.parent)[0].x -
         20 -
         (this.absX + window.scrollX) +
         this.canvasDiv.getBoundingClientRect().left +
         "px";
-      document.querySelector(
-          `.arrowid[value="${children.id}"]`
-          ).parentNode.innerHTML = `<input type="hidden" class="arrowid" value="${
-            children.id
-          }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0L20 ${
-          this.paddingY / 2
-        }L${x} ${
-          this.paddingY / 2
-        }L${x} ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M${x - 5} ${
-          y - 5
-        }H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/></svg>`;
+      arrowElement.parentNode.innerHTML = `<input type="hidden" class="arrowid" value="${children.id}">
+        <svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 0L20 ${this.paddingY / 2}L${x} ${this.paddingY / 2}L${x} ${y}" stroke="#C5CCD0" stroke-width="2px"/>
+          <path d="M${x - 5} ${y - 5}H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/>
+        </svg>`;
     }
   }
+}
+
           
   snap(drag: HTMLElement, i: number, blocko: Array<number>): void {
     if (!this.rearrange) {
@@ -803,7 +814,7 @@ class Flowy {
     }
 
     if (this.active || this.rearrange) {
-      if (this.active) {
+      if (this.active && this.drag) {
         this.drag.style.left = `${this.mouseX - this.dragX}px`;
         this.drag.style.top = `${this.mouseY - this.dragY}px`;
       } else if (this.rearrange) {
