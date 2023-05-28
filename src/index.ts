@@ -449,28 +449,36 @@ class Flowy {
     }
   }
                               
-  drawArrow(arrow, x, y, id): void {
+  drawArrow(arrow: Block, x: number, y: number, id: number): void {
     if (x < 0) {
-      this.canvasDiv.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${
-        this.drag.querySelector(".blockid").value
-        }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M${
-        this.blocks.filter((a) => a.id == id)[0].x - arrow.x + 5
-      } 0L${this.blocks.filter((a) => a.id == id)[0].x - arrow.x + 5} ${
-        this.paddingY / 2
+      const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement;
+      const blockIdValue = blockIdElement ? blockIdElement.value : "";
+
+      this.canvasDiv.innerHTML += `<div class="arrowblock">
+        <input type="hidden" class="arrowid" value="${blockIdValue}">
+          <svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M${this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5} 0L${this.blocks.filter((a) => a.id == id)[0].x - arrow.x + 5} ${this.paddingY / 2
       }L5 ${
         this.paddingY / 2
       }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
         y - 5
       }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
-      document.querySelector(
-        `.arrowid[value="${this.drag.querySelector(".blockid").value}"]`
-        ).parentNode.style.left =
-        arrow.x -
-        5 -
-        (this.absX + window.scrollX) +
-        this.canvasDiv.scrollLeft +
-        this.canvasDiv.getBoundingClientRect().left +
-        "px";
+      
+      const arrowSelector = `.arrowid[value="${blockIdElement?.value}"]`;
+      const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
+
+      if (arrowElement) {
+        const parentNode = arrowElement.parentNode as HTMLElement;
+        const left =
+          arrow.x -
+          5 -
+          (this.absX + window.scrollX) +
+          this.canvasDiv.scrollLeft +
+          this.canvasDiv.getBoundingClientRect().left +
+          "px";
+
+        parentNode.style.left = left;
+      }
     } else {
       this.canvasDiv.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${
         this.drag.querySelector(".blockid").value
