@@ -450,21 +450,22 @@ class Flowy {
   }
                               
   drawArrow(arrow: Block, x: number, y: number, id: number): void {
-    if (x < 0) {
-      const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement;
-      const blockIdValue = blockIdElement ? blockIdElement.value : "";
+  if (x < 0) {
+    const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement | null;
+    const blockIdValue = blockIdElement ? blockIdElement.value : "";
 
+    if (blockIdElement) {
       this.canvasDiv.innerHTML += `<div class="arrowblock">
         <input type="hidden" class="arrowid" value="${blockIdValue}">
           <svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M${this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5} 0L${this.blocks.filter((a) => a.id == id)[0].x - arrow.x + 5} ${this.paddingY / 2
+            <path d="M${this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5} 0L${this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5} ${this.paddingY / 2
       }L5 ${
         this.paddingY / 2
       }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
         y - 5
       }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
-      
-      const arrowSelector = `.arrowid[value="${blockIdElement?.value}"]`;
+
+      const arrowSelector = `.arrowid[value="${blockIdValue}"]`;
       const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
 
       if (arrowElement) {
@@ -479,37 +480,59 @@ class Flowy {
 
         parentNode.style.left = left;
       }
-    } else {
-      this.canvasDiv.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${
-        this.drag.querySelector(".blockid").value
-          }"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0L20 ${
-          this.paddingY / 2
-        }L${x} ${
-          this.paddingY / 2
-        }L${x} ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M${x - 5} ${
-          y - 5
-        }H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
-      document.querySelector(
-        `.arrowid[value="${parseInt(
-          this.drag.querySelector(".blockid").value
-          )}"]`
-        ).parentNode.style.left =
+    }
+  } else {
+    const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement | null;
+    const blockIdValue = blockIdElement ? blockIdElement.value : "";
+
+    if (blockIdElement) {
+      this.canvasDiv.innerHTML += `<div class="arrowblock"><input type="hidden" class="arrowid" value="${blockIdValue}"><svg preserveaspectratio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0L20 ${
+        this.paddingY / 2
+      }L${x} ${
+        this.paddingY / 2
+      }L${x} ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M${x - 5} ${
+        y - 5
+      }H${x + 5}L${x} ${y}L${x - 5} ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
+
+      const arrowSelector = `.arrowid[value="${blockIdValue}"]`;
+      const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
+
+      if (arrowElement) {
+        const parentNode = arrowElement.parentNode as HTMLElement;
+        const left =
           this.blocks.filter((a) => a.id == id)[0].x -
           20 -
           (this.absX + window.scrollX) +
           this.canvasDiv.scrollLeft +
           this.canvasDiv.getBoundingClientRect().left +
           "px";
+
+        parentNode.style.left = left;
+      }
     }
-    document.querySelector(
-      `.arrowid[value="${parseInt(this.drag.querySelector(".blockid").value)}"]`
-      ).parentNode.style.top =
-      this.blocks.filter((a) => a.id == id)[0].y +
-      this.blocks.filter((a) => a.id == id)[0].height / 2 +
-      this.canvasDiv.getBoundingClientRect().top -
-      this.absY +
-      "px";
+  }
+
+  const blockIdElement = this.drag?.querySelector(".blockid") as HTMLInputElement | null;
+  const blockIdValue = blockIdElement ? blockIdElement.value : "";
+
+  if (blockIdElement) {
+    const arrowSelector = `.arrowid[value="${parseInt(blockIdValue)}"]`;
+    const arrowElement = document.querySelector(arrowSelector) as HTMLElement | null;
+
+    if (arrowElement) {
+      const parentNode = arrowElement.parentNode as HTMLElement;
+      const top =
+        this.blocks.filter((a) => a.id == id)[0].y +
+        this.blocks.filter((a) => a.id == id)[0].height / 2 +
+        this.canvasDiv.getBoundingClientRect().top -
+        this.absY +
+        "px";
+
+      parentNode.style.top = top;
     }
+  }
+}
+
       
   updateArrow(arrow, x, y, children): void {
     if (x < 0) {
