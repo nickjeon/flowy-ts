@@ -1,6 +1,5 @@
 type FlowyCallback = () => void;
 type SnappingCallback = (drag: HTMLElement, first: boolean, parent: HTMLElement | null) => boolean;
-type RearrangeCallback = (drag: HTMLElement, parent: Block) => boolean;
 
 interface Block {
   childwidth: number;
@@ -56,14 +55,13 @@ class Flowy {
   private grab = (block: HTMLElement | Element) => {};
   private release: FlowyCallback = () => {};
   private snapping: SnappingCallback = (drag: HTMLElement, first: boolean, parent: HTMLElement | null) => true;
-  private rearrange: RearrangeCallback = (drag: HTMLElement, parent: Block) => false;
+  private rearrange: boolean;
   
   constructor(
     canvas: HTMLElement,
     grab: FlowyCallback = () => {},
     release: FlowyCallback = () => {},
     snapping: SnappingCallback = () => true,
-    rearrange: RearrangeCallback = () => false,
     spacingX: number = 20,
     spacingY: number = 80
   ) {
@@ -73,7 +71,7 @@ class Flowy {
     this.grab = grab;
     this.release = release;
     this.snapping = snapping;
-    this.rearrange = rearrange;
+    this.rearrange = false;
     
     const canvasPosition = window.getComputedStyle(this.canvasDiv).position;
 
@@ -287,7 +285,7 @@ class Flowy {
               this.snap(this.drag, blockIds.indexOf(this.prevblock), blockIds);
               break;
             } else {
-              this.rearrange = () => false;
+              this.rearrange = false;
               this.tempBlocks = [];
               this.active = false;
               this.removeSelection();
@@ -366,7 +364,7 @@ class Flowy {
       });
     } else if (type === "rearrange" && this.drag) {
         this.drag.classList.remove("dragging");
-        this.rearrange = () => false;
+        this.rearrange = false;
 
         const blockIdElement = this.drag.querySelector(".blockid") as HTMLInputElement;
         const blockId = blockIdElement ? parseInt(blockIdElement.value) : NaN;
@@ -591,13 +589,20 @@ class Flowy {
     for (let w = 0; w < parentBlocks.length; w++) {
       const children = parentBlocks[w];
       const grandparentBlock = this.blocks.filter(a => a.id === blocko[i])[0];
+      const block = document.querySelector(`.blockid[value='${children.id}']`);
       
       if (children.childwidth > children.width) {
-        document.querySelector(`.blockid[value='${children.id}']`).parentNode.style.left = grandparentBlock.x - (totalwidth / 2) + totalremove + (children.childwidth / 2) - (children.width / 2) + "px";
+        if (block !== null && block.parentNode !== null) {
+          const parentNode = block.parentNode as HTMLElement;
+          parentNode.style.left = grandparentBlock.x - (totalwidth / 2) + totalremove + (children.childwidth / 2) - (children.width / 2) + "px";
+        }
         children.x = grandparentBlock.x - (totalwidth / 2) + totalremove + (children.childwidth / 2);
         totalremove += children.childwidth + this.paddingX;
       } else {
-        document.querySelector(`.blockid[value='${children.id}']`).parentNode.style.left = grandparentBlock.x - (totalwidth / 2) + totalremove + "px";
+        if (block !== null && block.parentNode !== null) {
+          const parentNode = block.parentNode as HTMLElement;
+          parentNode.style.left = grandparentBlock.x - (totalwidth / 2) + totalremove + "px";
+        }
         children.x = grandparentBlock.x - (totalwidth / 2) + totalremove + (children.width / 2);
         totalremove += children.width + this.paddingX;
       }
@@ -608,8 +613,9 @@ class Flowy {
     drag.style.left = targetBlock.x - (totalwidth / 2) + totalremove - (window.scrollX + this.absX) + this.canvasDiv.scrollLeft + this.canvasDiv.getBoundingClientRect().left + "px";
     drag.style.top = targetBlock.y + (targetBlock.height / 2) + this.paddingY - (window.scrollY + this.absY) + this.canvasDiv.getBoundingClientRect().top + "px";
     
-    if (this.rearrange()) {
-      const blockID = parseInt(drag.querySelector(".blockid").value);
+    if (this.rearrange && this.drag) {
+      const block = drag.querySelector(".blockid") as HTMLInputElement;
+      const blockID = block ? parseInt(block.value) : null;
       const blockTemp = this.tempBlocks.filter(a => a.id === blockID)[0];
       
       blockTemp.x = (drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(drag).width) / 2) + this.canvasDiv.scrollLeft - this.canvasDiv.getBoundingClientRect().left;
@@ -636,15 +642,24 @@ class Flowy {
       this.blocks = this.blocks.concat(this.tempBlocks);
       this.tempBlocks = [];
     } else {
-      this.blocks.push({
+      const block = drag.querySelector(".blockid") as HTMLInputElement | null;
+      const blockID = block ? parseInt(block.value) : NaN;
+
+      const rect = drag.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(drag);
+
+      const newBlock: Block = {
         childwidth: 0,
         parent: blocko[i],
-        id: parseInt(drag.querySelector(".blockid").value),
-        x: (drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(drag).width) / 2) + this.canvasDiv.scrollLeft - this.canvasDiv.getBoundingClientRect().left,
-        y: (drag.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(drag).height) / 2) + this.canvasDiv.scrollTop - this.canvasDiv.getBoundingClientRect().top,
-        width: parseInt(window.getComputedStyle(drag).width),
-        height: parseInt(window.getComputedStyle(drag).height)
-      });
+        id: blockID,
+        x: rect.left + window.scrollX + (parseInt(computedStyle.width) / 2) + this.canvasDiv.scrollLeft - this.canvasDiv.getBoundingClientRect().left,
+        y: rect.top + window.scrollY + (parseInt(computedStyle.height) / 2) + this.canvasDiv.scrollTop - this.canvasDiv.getBoundingClientRect().top,
+        width: parseInt(computedStyle.width),
+        height: parseInt(computedStyle.height)
+      };
+
+      this.blocks.push(newBlock);
+
     }
     
     const arrowblock = this.blocks.filter(a => a.id === parseInt(drag.querySelector(".blockid").value))[0];
@@ -686,7 +701,7 @@ class Flowy {
     }
     
     if (this.rearrange) {
-      this.rearrange = () => false;
+      this.rearrange = false;
       drag.classList.remove("dragging");
     }
     this.rearrangeMe();
@@ -712,7 +727,7 @@ class Flowy {
       
       if (event.type !== "mouseup" && this.hasParentClass(targetElement, "block")) {
         if ('which' in event && (event as MouseEvent).which !== 3) {
-          if (!this.active && !this.rearrange()) {
+          if (!this.active && !this.rearrange) {
             dragblock = true;
             this.drag = theblock;
             this.dragX = mouse_x - (this.drag.getBoundingClientRect().left + window.scrollX);
@@ -957,7 +972,7 @@ class Flowy {
   }
 
   beforeDelete(drag: HTMLElement, parent: Block): boolean {
-    return this.rearrange(drag, parent);
+    return this.rearrange; // need to call rearrange method
   }
 
   addEventListenerMulti(type: string, listener: EventListenerOrEventListenerObject, capture: boolean, selector: string): void {
