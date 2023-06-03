@@ -613,8 +613,9 @@ class Flowy {
     drag.style.left = targetBlock.x - (totalwidth / 2) + totalremove - (window.scrollX + this.absX) + this.canvasDiv.scrollLeft + this.canvasDiv.getBoundingClientRect().left + "px";
     drag.style.top = targetBlock.y + (targetBlock.height / 2) + this.paddingY - (window.scrollY + this.absY) + this.canvasDiv.getBoundingClientRect().top + "px";
     
-    if (this.rearrange) {
-      const blockID = parseInt(drag.querySelector(".blockid").value);
+    if (this.rearrange && this.drag) {
+      const block = drag.querySelector(".blockid") as HTMLInputElement;
+      const blockID = block ? parseInt(block.value) : null;
       const blockTemp = this.tempBlocks.filter(a => a.id === blockID)[0];
       
       blockTemp.x = (drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(drag).width) / 2) + this.canvasDiv.scrollLeft - this.canvasDiv.getBoundingClientRect().left;
