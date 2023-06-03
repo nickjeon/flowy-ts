@@ -642,15 +642,24 @@ class Flowy {
       this.blocks = this.blocks.concat(this.tempBlocks);
       this.tempBlocks = [];
     } else {
-      this.blocks.push({
+      const block = drag.querySelector(".blockid") as HTMLInputElement | null;
+      const blockID = block ? parseInt(block.value) : NaN;
+
+      const rect = drag.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(drag);
+
+      const newBlock: Block = {
         childwidth: 0,
         parent: blocko[i],
-        id: parseInt(drag.querySelector(".blockid").value),
-        x: (drag.getBoundingClientRect().left + window.scrollX) + (parseInt(window.getComputedStyle(drag).width) / 2) + this.canvasDiv.scrollLeft - this.canvasDiv.getBoundingClientRect().left,
-        y: (drag.getBoundingClientRect().top + window.scrollY) + (parseInt(window.getComputedStyle(drag).height) / 2) + this.canvasDiv.scrollTop - this.canvasDiv.getBoundingClientRect().top,
-        width: parseInt(window.getComputedStyle(drag).width),
-        height: parseInt(window.getComputedStyle(drag).height)
-      });
+        id: blockID,
+        x: rect.left + window.scrollX + (parseInt(computedStyle.width) / 2) + this.canvasDiv.scrollLeft - this.canvasDiv.getBoundingClientRect().left,
+        y: rect.top + window.scrollY + (parseInt(computedStyle.height) / 2) + this.canvasDiv.scrollTop - this.canvasDiv.getBoundingClientRect().top,
+        width: parseInt(computedStyle.width),
+        height: parseInt(computedStyle.height)
+      };
+
+      this.blocks.push(newBlock);
+
     }
     
     const arrowblock = this.blocks.filter(a => a.id === parseInt(drag.querySelector(".blockid").value))[0];
