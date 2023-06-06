@@ -706,9 +706,10 @@ class Flowy {
       this.canvasDiv.getBoundingClientRect().top +
       "px";
 
+    const block = drag.querySelector(".blockid") as HTMLInputElement;
+    const blockID = block ? parseInt(block.value) : NaN;
+
     if (this.rearrange && this.drag) {
-      const block = drag.querySelector(".blockid") as HTMLInputElement;
-      const blockID = block ? parseInt(block.value) : null;
       const blockTemp = this.tempBlocks.filter((a) => a.id === blockID)[0];
 
       blockTemp.x =
@@ -786,9 +787,6 @@ class Flowy {
       this.blocks = this.blocks.concat(this.tempBlocks);
       this.tempBlocks = [];
     } else {
-      const block = drag.querySelector(".blockid") as HTMLInputElement | null;
-      const blockID = block ? parseInt(block.value) : NaN;
-
       const rect = drag.getBoundingClientRect();
       const computedStyle = window.getComputedStyle(drag);
 
@@ -815,9 +813,7 @@ class Flowy {
       this.blocks.push(newBlock);
     }
 
-    const arrowblock = this.blocks.filter(
-      (a) => a.id === parseInt(drag.querySelector(".blockid").value)
-    )[0];
+    const arrowblock = this.blocks.filter((a) => a.id === blockID)[0];
     const arrowx = arrowblock.x - targetBlock.x + 20;
     const arrowy = this.paddingY;
     this.drawArrow(arrowblock, arrowx, arrowy, blocko[i]);
@@ -922,28 +918,31 @@ class Flowy {
       mouseY = event.clientY;
     }
 
-    if (this.dragblock) {
-      this.rearrange = () => true;
+    if (this.dragblock && this.drag) {
+      this.rearrange = true;
       this.drag?.classList.add("dragging");
-      const blockid = parseInt(this.drag.querySelector(".blockid").value);
-      const prevblock = this.blocks.filter((a) => a.id === blockid)[0].parent;
-      this.tempBlocks.push(this.blocks.filter((a) => a.id === blockid)[0]);
-      this.blocks = this.blocks.filter((e) => e.id !== blockid);
+      const block = this.drag.querySelector(
+        ".blockid"
+      ) as HTMLInputElement | null;
+      const blockID = block ? parseInt(block.value) : NaN;
+      const prevblock = this.blocks.filter((a) => a.id === blockID)[0].parent;
+      this.tempBlocks.push(this.blocks.filter((a) => a.id === blockID)[0]);
+      this.blocks = this.blocks.filter((e) => e.id !== blockID);
 
-      if (blockid !== 0) {
+      if (blockID !== 0) {
         document
-          .querySelector(".arrowid[value='" + blockid + "']")
+          .querySelector(".arrowid[value='" + blockID + "']")
           .parentNode.remove();
       }
 
-      let layer = this.blocks.filter((a) => a.parent === blockid);
+      let layer = this.blocks.filter((a) => a.parent === blockID);
       let flag = false;
       let foundids = [];
       let allids = [];
 
       while (!flag) {
         for (let i = 0; i < layer.length; i++) {
-          if (layer[i] !== blockid) {
+          if (layer[i] !== blockID) {
             this.tempBlocks.push(
               this.blocks.filter((a) => a.id === layer[i].id)[0]
             );
@@ -1008,10 +1007,10 @@ class Flowy {
       this.dragblock = false;
     }
 
-    if (this.active) {
+    if (this.active && this.drag) {
       this.drag.style.left = `${mouse_x - this.dragX}px`;
       this.drag.style.top = `${mouseY - this.dragY}px`;
-    } else if (this.rearrange) {
+    } else if (this.rearrange && this.drag) {
       this.drag.style.left = `${
         mouse_x -
         this.dragX -
@@ -1044,7 +1043,7 @@ class Flowy {
       if (this.active && this.drag) {
         this.drag.style.left = `${this.mouseX - this.dragX}px`;
         this.drag.style.top = `${this.mouseY - this.dragY}px`;
-      } else if (this.rearrange) {
+      } else if (this.rearrange && this.drag) {
         this.drag.style.left = `${
           this.mouseX -
           this.dragX -
