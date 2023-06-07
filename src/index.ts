@@ -930,9 +930,12 @@ class Flowy {
       this.blocks = this.blocks.filter((e) => e.id !== blockID);
 
       if (blockID !== 0) {
-        document
-          .querySelector(".arrowid[value='" + blockID + "']")
-          .parentNode.remove();
+        const arrowIdElement = document.querySelector(
+          ".arrowid[value='" + blockID + "']"
+        );
+        if (arrowIdElement !== null) {
+          (arrowIdElement.parentNode as Element).remove();
+        }
       }
 
       let layer = this.blocks.filter((a) => a.parent === blockID);
