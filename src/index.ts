@@ -940,12 +940,12 @@ class Flowy {
 
       let layer = this.blocks.filter((a) => a.parent === blockID);
       let flag = false;
-      let foundids = [];
+      let foundids: number[] = [];
       let allids = [];
 
       while (!flag) {
         for (let i = 0; i < layer.length; i++) {
-          if (layer[i] !== blockID) {
+          if (layer[i].id !== blockID) {
             this.tempBlocks.push(
               this.blocks.filter((a) => a.id === layer[i].id)[0]
             );
@@ -991,11 +991,11 @@ class Flowy {
 
       for (
         let i = 0;
-        i < this.blocks.filter((a) => a.parent === blockid).length;
+        i < this.blocks.filter((a) => a.parent === blockID).length;
         i++
       ) {
-        const blocknumber = this.blocks.filter((a) => a.parent === blockid)[i];
-        this.blocks = this.blocks.filter((e) => e.id !== blocknumber);
+        const blocknumber = this.blocks.filter((a) => a.parent === blockID)[i];
+        this.blocks = this.blocks.filter((e) => e.id !== blocknumber.id);
       }
 
       for (let i = 0; i < allids.length; i++) {
