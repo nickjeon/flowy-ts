@@ -907,55 +907,47 @@ class Flowy {
   }
 
   moveBlock(event: MouseEvent | TouchEvent): void {
-    let mouse_x: number;
+    let mouseX: number;
     let mouseY: number;
 
     if ("targetTouches" in event) {
-      mouse_x = event.targetTouches[0].clientX;
+      mouseX = event.targetTouches[0].clientX;
       mouseY = event.targetTouches[0].clientY;
     } else {
-      mouse_x = event.clientX;
+      mouseX = event.clientX;
       mouseY = event.clientY;
     }
 
     if (this.dragblock && this.drag) {
       this.rearrange = true;
       this.drag?.classList.add("dragging");
-      const block = this.drag.querySelector(
-        ".blockid"
-      ) as HTMLInputElement | null;
-      const blockID = block ? parseInt(block.value) : NaN;
+      const block = this.drag.querySelector(".blockid") as HTMLInputElement | null;
+      const blockID = block ? parseInt(block.value) : null;
       const prevblock = this.blocks.filter((a) => a.id === blockID)[0].parent;
       this.tempBlocks.push(this.blocks.filter((a) => a.id === blockID)[0]);
       this.blocks = this.blocks.filter((e) => e.id !== blockID);
 
       if (blockID !== 0) {
-        const arrowIdElement = document.querySelector(
-          ".arrowid[value='" + blockID + "']"
-        );
+        const arrowIdElement = document.querySelector(`.arrowid[value='${blockID}']`);
         if (arrowIdElement !== null) {
-          (arrowIdElement.parentNode as Element).remove();
+          arrowIdElement.parentNode?.remove();
         }
       }
 
       let layer = this.blocks.filter((a) => a.parent === blockID);
       let flag = false;
       let foundids: number[] = [];
-      let allids = [];
+      let allids: number[] = [];
 
       while (!flag) {
         for (let i = 0; i < layer.length; i++) {
           if (layer[i].id !== blockID) {
-            this.tempBlocks.push(
-              this.blocks.filter((a) => a.id === layer[i].id)[0]
-            );
-            const blockElement = document.querySelector(
-              ".blockid[value='" + layer[i].id + "']"
-            );
-            const blockParent = blockElement ? (blockElement.parentNode as HTMLElement) : null;
-            const arrowParent = document.querySelector(
-              ".arrowid[value='" + layer[i].id + "']"
-            ).parentNode;
+            this.tempBlocks.push(this.blocks.filter((a) => a.id === layer[i].id)[0]);
+            const blockElement = document.querySelector(`.blockid[value='${layer[i].id}']`) as HTMLElement | null;
+            const blockParent = blockElement?.parentNode as HTMLElement;
+
+            const arrowParent = document.querySelector(`.arrowid[value='${layer[i].id}']`).parentNode as HTMLElement;
+
             if (blockParent) {
               blockParent.style.left = `${
                 blockParent.getBoundingClientRect().left +
@@ -979,7 +971,6 @@ class Flowy {
               window.scrollY -
               (this.drag.getBoundingClientRect().top + window.scrollY)
             }px`;
-            
             this.drag.appendChild(arrowParent);
             foundids.push(layer[i].id);
             allids.push(layer[i].id);
@@ -993,11 +984,7 @@ class Flowy {
         }
       }
 
-      for (
-        let i = 0;
-        i < this.blocks.filter((a) => a.parent === blockID).length;
-        i++
-      ) {
+      for (let i = 0; i < this.blocks.filter((a) => a.parent === blockID).length; i++) {
         const blocknumber = this.blocks.filter((a) => a.parent === blockID)[i];
         this.blocks = this.blocks.filter((e) => e.id !== blocknumber.id);
       }
@@ -1015,11 +1002,11 @@ class Flowy {
     }
 
     if (this.active && this.drag) {
-      this.drag.style.left = `${mouse_x - this.dragX}px`;
+      this.drag.style.left = `${mouseX - this.dragX}px`;
       this.drag.style.top = `${mouseY - this.dragY}px`;
     } else if (this.rearrange && this.drag) {
       this.drag.style.left = `${
-        mouse_x -
+        mouseX -
         this.dragX -
         (window.scrollX + this.absX) +
         this.canvasDiv.scrollLeft
@@ -1030,20 +1017,19 @@ class Flowy {
         (window.scrollY + this.absY) +
         this.canvasDiv.scrollTop
       }px`;
-      this.tempBlocks.filter(
-        (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-      ).x =
-        this.drag.getBoundingClientRect().left +
-        window.scrollX +
-        parseInt(window.getComputedStyle(this.drag).width) / 2 +
-        this.canvasDiv.scrollLeft;
-      this.tempBlocks.filter(
-        (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-      ).y =
-        this.drag.getBoundingClientRect().top +
-        window.scrollY +
-        parseInt(window.getComputedStyle(this.drag).height) / 2 +
-        this.canvasDiv.scrollTop;
+      const dragBlock = this.tempBlocks.find(a => a.id === parseInt(this.drag.querySelector(".blockid").value));
+      if (dragBlock) {
+        dragBlock.x =
+          this.drag.getBoundingClientRect().left +
+          window.scrollX +
+          parseInt(window.getComputedStyle(this.drag).width) / 2 +
+          this.canvasDiv.scrollLeft;
+        dragBlock.y =
+          this.drag.getBoundingClientRect().top +
+          window.scrollY +
+          parseInt(window.getComputedStyle(this.drag).height) / 2 +
+          this.canvasDiv.scrollTop;
+      }
     }
 
     if (this.active || this.rearrange) {
@@ -1063,20 +1049,19 @@ class Flowy {
           (window.scrollY + this.absY) +
           this.canvasDiv.scrollTop
         }px`;
-        this.tempBlocks.filter(
-          (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-        ).x =
-          this.drag.getBoundingClientRect().left +
-          window.scrollX +
-          parseInt(window.getComputedStyle(this.drag).width) / 2 +
-          this.canvasDiv.scrollLeft;
-        this.tempBlocks.filter(
-          (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-        ).y =
-          this.drag.getBoundingClientRect().top +
-          window.scrollY +
-          parseInt(window.getComputedStyle(this.drag).height) / 2 +
-          this.canvasDiv.scrollTop;
+        const dragBlock = this.tempBlocks.find(a => a.id === parseInt(this.drag.querySelector(".blockid").value));
+        if (dragBlock) {
+          dragBlock.x =
+            this.drag.getBoundingClientRect().left +
+            window.scrollX +
+            parseInt(window.getComputedStyle(this.drag).width) / 2 +
+            this.canvasDiv.scrollLeft;
+          dragBlock.y =
+            this.drag.getBoundingClientRect().top +
+            window.scrollY +
+            parseInt(window.getComputedStyle(this.drag).height) / 2 +
+            this.canvasDiv.scrollTop;
+        }
       }
 
       if (
@@ -1128,28 +1113,22 @@ class Flowy {
 
       for (let i = 0; i < this.blocks.length; i++) {
         if (this.checkAttach(blocko[i])) {
-          document
-            .querySelector(".blockid[value='" + blocko[i] + "']")
-            .parentNode.appendChild(document.querySelector(".indicator"));
-          document.querySelector(".indicator").style.left = `${
-            document.querySelector(".blockid[value='" + blocko[i] + "']")
-              .parentNode.offsetWidth /
-              2 -
+          const indicator = document.querySelector(".indicator") as HTMLElement;
+          document.querySelector(`.blockid[value='${blocko[i]}']`)?.parentNode?.appendChild(indicator);
+
+          indicator.style.left = `${
+            document.querySelector(`.blockid[value='${blocko[i]}']`)?.parentNode?.offsetWidth! / 2 -
             5
           }px`;
-          document.querySelector(".indicator").style.top = `${
-            document.querySelector(".blockid[value='" + blocko[i] + "']")
-              .parentNode.offsetHeight
+          indicator.style.top = `${
+            document.querySelector(`.blockid[value='${blocko[i]}']`)?.parentNode?.offsetHeight!
           }px`;
-          document.querySelector(".indicator").classList.remove("invisible");
+          indicator.classList.remove("invisible");
           break;
         } else if (i === this.blocks.length - 1) {
-          if (
-            !document
-              .querySelector(".indicator")
-              .classList.contains("invisible")
-          ) {
-            document.querySelector(".indicator").classList.add("invisible");
+          const indicator = document.querySelector(".indicator") as HTMLElement;
+          if (!indicator.classList.contains("invisible")) {
+            indicator.classList.add("invisible");
           }
         }
       }
