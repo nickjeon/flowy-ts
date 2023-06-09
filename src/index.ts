@@ -907,64 +907,60 @@ class Flowy {
   }
 
   moveBlock(event: MouseEvent | TouchEvent): void {
-    let mouse_x: number;
+    let mouseX: number;
     let mouseY: number;
 
     if ("targetTouches" in event) {
-      mouse_x = event.targetTouches[0].clientX;
+      mouseX = event.targetTouches[0].clientX;
       mouseY = event.targetTouches[0].clientY;
     } else {
-      mouse_x = event.clientX;
+      mouseX = event.clientX;
       mouseY = event.clientY;
     }
 
     if (this.dragblock && this.drag) {
       this.rearrange = true;
       this.drag?.classList.add("dragging");
-      const block = this.drag.querySelector(
-        ".blockid"
-      ) as HTMLInputElement | null;
-      const blockID = block ? parseInt(block.value) : NaN;
+      const block = this.drag.querySelector(".blockid") as HTMLInputElement | null;
+      const blockID = block ? parseInt(block.value) : null;
       const prevblock = this.blocks.filter((a) => a.id === blockID)[0].parent;
       this.tempBlocks.push(this.blocks.filter((a) => a.id === blockID)[0]);
       this.blocks = this.blocks.filter((e) => e.id !== blockID);
 
       if (blockID !== 0) {
-        const arrowIdElement = document.querySelector(
-          ".arrowid[value='" + blockID + "']"
-        );
+        const arrowIdElement = document.querySelector(`.arrowid[value='${blockID}']`);
         if (arrowIdElement !== null) {
-          (arrowIdElement.parentNode as Element).remove();
+          arrowIdElement.parentNode?.remove();
         }
       }
 
       let layer = this.blocks.filter((a) => a.parent === blockID);
       let flag = false;
       let foundids: number[] = [];
-      let allids = [];
+      let allids: number[] = [];
 
       while (!flag) {
         for (let i = 0; i < layer.length; i++) {
           if (layer[i].id !== blockID) {
-            this.tempBlocks.push(
-              this.blocks.filter((a) => a.id === layer[i].id)[0]
-            );
-            const blockParent = document.querySelector(
-              ".blockid[value='" + layer[i].id + "']"
-            ).parentNode;
-            const arrowParent = document.querySelector(
-              ".arrowid[value='" + layer[i].id + "']"
-            ).parentNode;
-            blockParent.style.left = `${
-              blockParent.getBoundingClientRect().left +
-              window.scrollX -
-              (this.drag.getBoundingClientRect().left + window.scrollX)
-            }px`;
-            blockParent.style.top = `${
-              blockParent.getBoundingClientRect().top +
-              window.scrollY -
-              (this.drag.getBoundingClientRect().top + window.scrollY)
-            }px`;
+            this.tempBlocks.push(this.blocks.filter((a) => a.id === layer[i].id)[0]);
+            const blockElement = document.querySelector(`.blockid[value='${layer[i].id}']`) as HTMLElement | null;
+            const blockParent = blockElement?.parentNode as HTMLElement;
+
+            const arrowParent = document.querySelector(`.arrowid[value='${layer[i].id}']`).parentNode as HTMLElement;
+
+            if (blockParent) {
+              blockParent.style.left = `${
+                blockParent.getBoundingClientRect().left +
+                window.scrollX -
+                (this.drag.getBoundingClientRect().left + window.scrollX)
+              }px`;
+              blockParent.style.top = `${
+                blockParent.getBoundingClientRect().top +
+                window.scrollY -
+                (this.drag.getBoundingClientRect().top + window.scrollY)
+              }px`;
+              this.drag.appendChild(blockParent);
+            }
             arrowParent.style.left = `${
               arrowParent.getBoundingClientRect().left +
               window.scrollX -
@@ -975,7 +971,6 @@ class Flowy {
               window.scrollY -
               (this.drag.getBoundingClientRect().top + window.scrollY)
             }px`;
-            this.drag.appendChild(blockParent);
             this.drag.appendChild(arrowParent);
             foundids.push(layer[i].id);
             allids.push(layer[i].id);
@@ -989,11 +984,7 @@ class Flowy {
         }
       }
 
-      for (
-        let i = 0;
-        i < this.blocks.filter((a) => a.parent === blockID).length;
-        i++
-      ) {
+      for (let i = 0; i < this.blocks.filter((a) => a.parent === blockID).length; i++) {
         const blocknumber = this.blocks.filter((a) => a.parent === blockID)[i];
         this.blocks = this.blocks.filter((e) => e.id !== blocknumber.id);
       }
@@ -1011,11 +1002,11 @@ class Flowy {
     }
 
     if (this.active && this.drag) {
-      this.drag.style.left = `${mouse_x - this.dragX}px`;
+      this.drag.style.left = `${mouseX - this.dragX}px`;
       this.drag.style.top = `${mouseY - this.dragY}px`;
     } else if (this.rearrange && this.drag) {
       this.drag.style.left = `${
-        mouse_x -
+        mouseX -
         this.dragX -
         (window.scrollX + this.absX) +
         this.canvasDiv.scrollLeft
@@ -1026,20 +1017,19 @@ class Flowy {
         (window.scrollY + this.absY) +
         this.canvasDiv.scrollTop
       }px`;
-      this.tempBlocks.filter(
-        (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-      ).x =
-        this.drag.getBoundingClientRect().left +
-        window.scrollX +
-        parseInt(window.getComputedStyle(this.drag).width) / 2 +
-        this.canvasDiv.scrollLeft;
-      this.tempBlocks.filter(
-        (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-      ).y =
-        this.drag.getBoundingClientRect().top +
-        window.scrollY +
-        parseInt(window.getComputedStyle(this.drag).height) / 2 +
-        this.canvasDiv.scrollTop;
+      const dragBlock = this.tempBlocks.find(a => a.id === parseInt(this.drag.querySelector(".blockid").value));
+      if (dragBlock) {
+        dragBlock.x =
+          this.drag.getBoundingClientRect().left +
+          window.scrollX +
+          parseInt(window.getComputedStyle(this.drag).width) / 2 +
+          this.canvasDiv.scrollLeft;
+        dragBlock.y =
+          this.drag.getBoundingClientRect().top +
+          window.scrollY +
+          parseInt(window.getComputedStyle(this.drag).height) / 2 +
+          this.canvasDiv.scrollTop;
+      }
     }
 
     if (this.active || this.rearrange) {
@@ -1059,20 +1049,19 @@ class Flowy {
           (window.scrollY + this.absY) +
           this.canvasDiv.scrollTop
         }px`;
-        this.tempBlocks.filter(
-          (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-        ).x =
-          this.drag.getBoundingClientRect().left +
-          window.scrollX +
-          parseInt(window.getComputedStyle(this.drag).width) / 2 +
-          this.canvasDiv.scrollLeft;
-        this.tempBlocks.filter(
-          (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-        ).y =
-          this.drag.getBoundingClientRect().top +
-          window.scrollY +
-          parseInt(window.getComputedStyle(this.drag).height) / 2 +
-          this.canvasDiv.scrollTop;
+        const dragBlock = this.tempBlocks.find(a => a.id === parseInt(this.drag.querySelector(".blockid").value));
+        if (dragBlock) {
+          dragBlock.x =
+            this.drag.getBoundingClientRect().left +
+            window.scrollX +
+            parseInt(window.getComputedStyle(this.drag).width) / 2 +
+            this.canvasDiv.scrollLeft;
+          dragBlock.y =
+            this.drag.getBoundingClientRect().top +
+            window.scrollY +
+            parseInt(window.getComputedStyle(this.drag).height) / 2 +
+            this.canvasDiv.scrollTop;
+        }
       }
 
       if (
@@ -1124,28 +1113,22 @@ class Flowy {
 
       for (let i = 0; i < this.blocks.length; i++) {
         if (this.checkAttach(blocko[i])) {
-          document
-            .querySelector(".blockid[value='" + blocko[i] + "']")
-            .parentNode.appendChild(document.querySelector(".indicator"));
-          document.querySelector(".indicator").style.left = `${
-            document.querySelector(".blockid[value='" + blocko[i] + "']")
-              .parentNode.offsetWidth /
-              2 -
+          const indicator = document.querySelector(".indicator") as HTMLElement;
+          document.querySelector(`.blockid[value='${blocko[i]}']`)?.parentNode?.appendChild(indicator);
+
+          indicator.style.left = `${
+            document.querySelector(`.blockid[value='${blocko[i]}']`)?.parentNode?.offsetWidth! / 2 -
             5
           }px`;
-          document.querySelector(".indicator").style.top = `${
-            document.querySelector(".blockid[value='" + blocko[i] + "']")
-              .parentNode.offsetHeight
+          indicator.style.top = `${
+            document.querySelector(`.blockid[value='${blocko[i]}']`)?.parentNode?.offsetHeight!
           }px`;
-          document.querySelector(".indicator").classList.remove("invisible");
+          indicator.classList.remove("invisible");
           break;
         } else if (i === this.blocks.length - 1) {
-          if (
-            !document
-              .querySelector(".indicator")
-              .classList.contains("invisible")
-          ) {
-            document.querySelector(".indicator").classList.add("invisible");
+          const indicator = document.querySelector(".indicator") as HTMLElement;
+          if (!indicator.classList.contains("invisible")) {
+            indicator.classList.add("invisible");
           }
         }
       }
@@ -1241,112 +1224,44 @@ class Flowy {
   }
 
   rearrangeMe(): void {
-    const paddingx = 40;
-    const paddingy = 100;
-    const result = this.blocks.map((a) => a.parent);
+    for (let z = 0; z < this.blocks.length; z++) {
+      const paddingx = 40;
+      const paddingy = 100;
+      const parentBlocks = this.blocks.filter((id) => id.parent === this.blocks[z].parent);
+      const result = parentBlocks.map((a) => a.parent);
 
-    for (let z = 0; z < result.length; z++) {
       if (result[z] === -1) {
         z++;
+        continue;
       }
-      let totalwidth = 0;
-      let totalremove = 0;
-      let maxheight = 0;
 
-      for (
-        let w = 0;
-        w < this.blocks.filter((id) => id.parent === result[z]).length;
-        w++
-      ) {
-        const children = this.blocks.filter((id) => id.parent === result[z])[w];
-
-        if (
-          this.blocks.filter((id) => id.parent === children.id).length === 0
-        ) {
+      let totalwidth = parentBlocks.reduce((total, children) => {
+        if (this.blocks.filter((id) => id.parent === children.id).length === 0) {
           children.childwidth = 0;
         }
-        if (children.childwidth > children.width) {
-          if (
-            w ===
-            this.blocks.filter((id) => id.parent === result[z]).length - 1
-          ) {
-            totalwidth += children.childwidth;
-          } else {
-            totalwidth += children.childwidth + paddingx;
-          }
-        } else {
-          if (
-            w ===
-            this.blocks.filter((id) => id.parent === result[z]).length - 1
-          ) {
-            totalwidth += children.width;
-          } else {
-            totalwidth += children.width + paddingx;
-          }
-        }
-      }
+        return total + (children.childwidth > children.width ? children.childwidth : children.width) + paddingx;
+      }, 0);
 
       if (result[z] !== -1) {
-        this.blocks.filter((a) => a.id === result[z])[0].childwidth =
-          totalwidth;
+        this.blocks.filter((a) => a.id === result[z])[0].childwidth = totalwidth;
       }
 
-      for (
-        let w = 0;
-        w < this.blocks.filter((id) => id.parent === result[z]).length;
-        w++
-      ) {
-        const children = this.blocks.filter((id) => id.parent === result[z])[w];
-        const r_block = document.querySelector(
-          ".blockid[value='" + children.id + "']"
-        ).parentNode;
+      let totalremove = 0;
+      parentBlocks.forEach((children) => {
+        const r_block = document.querySelector(`.blockid[value="${children.id}"]`).parentNode;
         const r_array = this.blocks.filter((id) => id.id === result[z]);
-
-        r_block.style.top = `${
-          r_array.y +
-          paddingy +
-          this.canvasDiv.getBoundingClientRect().top -
-          this.absY
-        }px`;
+        r_block.style.top = `${r_array.y + paddingy + this.canvasDiv.getBoundingClientRect().top - this.absY}px`;
         r_array.y = r_array.y + paddingy;
-
-        if (children.childwidth > children.width) {
-          r_block.style.left = `${
-            r_array[0].x -
-            totalwidth / 2 +
-            totalremove +
-            children.childwidth / 2 -
-            children.width / 2 -
-            (this.absX + window.scrollX) +
-            this.canvasDiv.getBoundingClientRect().left
-          }px`;
-          children.x =
-            r_array[0].x -
-            totalwidth / 2 +
-            totalremove +
-            children.childwidth / 2;
-          totalremove += children.childwidth + paddingx;
-        } else {
-          r_block.style.left = `${
-            r_array[0].x -
-            totalwidth / 2 +
-            totalremove -
-            (this.absX + window.scrollX) +
-            this.canvasDiv.getBoundingClientRect().left
-          }px`;
-          children.x =
-            r_array[0].x - totalwidth / 2 + totalremove + children.width / 2;
-          totalremove += children.width + paddingx;
-        }
+        const calcWidth = children.childwidth > children.width ? children.childwidth : children.width;
+        r_block.style.left = `${r_array[0].x - totalwidth / 2 + totalremove + calcWidth / 2 - children.width / 2 - (this.absX + window.scrollX) + this.canvasDiv.getBoundingClientRect().left}px`;
+        children.x = r_array[0].x - totalwidth / 2 + totalremove + calcWidth / 2;
+        totalremove += calcWidth + paddingx;
 
         const arrowblock = this.blocks.filter((a) => a.id === children.id)[0];
-        const arrowx =
-          arrowblock.x -
-          this.blocks.filter((a) => a.id === children.parent)[0].x +
-          20;
+        const arrowx = arrowblock.x - this.blocks.filter((a) => a.id === children.parent)[0].x + 20;
         const arrowy = paddingy;
         this.updateArrow(arrowblock, arrowx, arrowy, children);
-      }
+      });
     }
   }
 
