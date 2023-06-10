@@ -934,7 +934,10 @@ class Flowy {
           `.arrowid[value='${blockID}']`
         );
         if (arrowIdElement !== null) {
-          arrowIdElement.parentNode?.remove();
+          const parentNode = arrowIdElement.parentNode;
+          if (parentNode) {
+            parentNode.removeChild(arrowIdElement);
+          }
         }
       }
 
