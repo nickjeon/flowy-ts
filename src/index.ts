@@ -103,6 +103,8 @@ class Flowy {
     this.el.classList.add("indicator");
     this.el.classList.add("invisible");
     this.canvasDiv.appendChild(this.el);
+
+    this.loaded = true;
   }
 
   import(output: Output): void {
@@ -1019,24 +1021,36 @@ class Flowy {
     }
 
     if (this.active && this.drag) {
-      this.drag.style.left = `${mouseX - this.dragX}px`;
-      this.drag.style.top = `${mouseY - this.dragY}px`;
+      this.drag.style.left = this.dragX
+        ? `${mouseX - this.dragX}px`
+        : `${mouseX}px`;
+      this.drag.style.top = this.dragY
+        ? `${mouseY - this.dragY}px`
+        : `${mouseY}px`;
     } else if (this.rearrange && this.drag) {
-      this.drag.style.left = `${
-        mouseX -
-        this.dragX -
-        (window.scrollX + this.absX) +
-        this.canvasDiv.scrollLeft
-      }px`;
-      this.drag.style.top = `${
-        mouseY -
-        this.dragY -
-        (window.scrollY + this.absY) +
-        this.canvasDiv.scrollTop
-      }px`;
-      const dragBlock = this.tempBlocks.find(
-        (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-      );
+      this.drag.style.left = this.dragX
+        ? `${
+            mouseX -
+            this.dragX -
+            (window.scrollX + this.absX) +
+            this.canvasDiv.scrollLeft
+          }px`
+        : `${
+            mouseX - (window.scrollX + this.absX) + this.canvasDiv.scrollLeft
+          }px`;
+      this.drag.style.top = this.dragY
+        ? `${
+            mouseY -
+            this.dragY -
+            (window.scrollY + this.absY) +
+            this.canvasDiv.scrollTop
+          }px`
+        : `${
+            mouseY - (window.scrollY + this.absY) + this.canvasDiv.scrollTop
+          }px`;
+      const block = this.drag.querySelector(".blockid") as HTMLInputElement;
+      const blockID = block ? parseInt(block.value) : NaN;
+      const dragBlock = this.tempBlocks.find((a) => a.id === blockID);
       if (dragBlock) {
         dragBlock.x =
           this.drag.getBoundingClientRect().left +
@@ -1051,7 +1065,13 @@ class Flowy {
       }
     }
 
-    if (this.active || this.rearrange) {
+    if (
+      (this.active || this.rearrange) &&
+      this.mouseX &&
+      this.mouseY &&
+      this.dragX &&
+      this.dragY
+    ) {
       if (this.active && this.drag) {
         this.drag.style.left = `${this.mouseX - this.dragX}px`;
         this.drag.style.top = `${this.mouseY - this.dragY}px`;
@@ -1068,9 +1088,9 @@ class Flowy {
           (window.scrollY + this.absY) +
           this.canvasDiv.scrollTop
         }px`;
-        const dragBlock = this.tempBlocks.find(
-          (a) => a.id === parseInt(this.drag.querySelector(".blockid").value)
-        );
+        const block = this.drag.querySelector(".blockid") as HTMLInputElement;
+        const blockID = block ? parseInt(block.value) : NaN;
+        const dragBlock = this.tempBlocks.find((a) => a.id === blockID);
         if (dragBlock) {
           dragBlock.x =
             this.drag.getBoundingClientRect().left +
@@ -1085,51 +1105,55 @@ class Flowy {
         }
       }
 
-      if (
-        this.mouseX >
-          this.canvasDiv.getBoundingClientRect().width +
-            this.canvasDiv.getBoundingClientRect().left -
-            10 &&
-        this.mouseX <
-          this.canvasDiv.getBoundingClientRect().width +
-            this.canvasDiv.getBoundingClientRect().left +
-            10
-      ) {
-        this.canvasDiv.scrollLeft += 10;
-      } else if (
-        this.mouseX < this.canvasDiv.getBoundingClientRect().left + 10 &&
-        this.mouseX > this.canvasDiv.getBoundingClientRect().left - 10
-      ) {
-        this.canvasDiv.scrollLeft -= 10;
-      } else if (
-        this.mouseY >
-          this.canvasDiv.getBoundingClientRect().height +
-            this.canvasDiv.getBoundingClientRect().top -
-            10 &&
-        this.mouseY <
-          this.canvasDiv.getBoundingClientRect().height +
-            this.canvasDiv.getBoundingClientRect().top +
-            10
-      ) {
-        this.canvasDiv.scrollTop += 10;
-      } else if (
-        this.mouseY < this.canvasDiv.getBoundingClientRect().top + 10 &&
-        this.mouseY > this.canvasDiv.getBoundingClientRect().top - 10
-      ) {
-        this.canvasDiv.scrollLeft -= 10;
+      if (this.mouseX && this.mouseY) {
+        if (
+          this.mouseX >
+            this.canvasDiv.getBoundingClientRect().width +
+              this.canvasDiv.getBoundingClientRect().left -
+              10 &&
+          this.mouseX <
+            this.canvasDiv.getBoundingClientRect().width +
+              this.canvasDiv.getBoundingClientRect().left +
+              10
+        ) {
+          this.canvasDiv.scrollLeft += 10;
+        } else if (
+          this.mouseX < this.canvasDiv.getBoundingClientRect().left + 10 &&
+          this.mouseX > this.canvasDiv.getBoundingClientRect().left - 10
+        ) {
+          this.canvasDiv.scrollLeft -= 10;
+        } else if (
+          this.mouseY >
+            this.canvasDiv.getBoundingClientRect().height +
+              this.canvasDiv.getBoundingClientRect().top -
+              10 &&
+          this.mouseY <
+            this.canvasDiv.getBoundingClientRect().height +
+              this.canvasDiv.getBoundingClientRect().top +
+              10
+        ) {
+          this.canvasDiv.scrollTop += 10;
+        } else if (
+          this.mouseY < this.canvasDiv.getBoundingClientRect().top + 10 &&
+          this.mouseY > this.canvasDiv.getBoundingClientRect().top - 10
+        ) {
+          this.canvasDiv.scrollLeft -= 10;
+        }
       }
 
-      const xpos =
-        this.drag.getBoundingClientRect().left +
-        window.scrollX +
-        parseInt(window.getComputedStyle(this.drag).width) / 2 +
-        this.canvasDiv.scrollLeft -
-        this.canvasDiv.getBoundingClientRect().left;
-      const ypos =
-        this.drag.getBoundingClientRect().top +
-        window.scrollY +
-        this.canvasDiv.scrollTop -
-        this.canvasDiv.getBoundingClientRect().top;
+      if (this.drag) {
+        const xpos =
+          this.drag.getBoundingClientRect().left +
+          window.scrollX +
+          parseInt(window.getComputedStyle(this.drag).width) / 2 +
+          this.canvasDiv.scrollLeft -
+          this.canvasDiv.getBoundingClientRect().left;
+        const ypos =
+          this.drag.getBoundingClientRect().top +
+          window.scrollY +
+          this.canvasDiv.scrollTop -
+          this.canvasDiv.getBoundingClientRect().top;
+      }
       const blocko = this.blocks.map((a) => a.id);
 
       for (let i = 0; i < this.blocks.length; i++) {
@@ -1140,14 +1164,17 @@ class Flowy {
             ?.parentNode?.appendChild(indicator);
 
           indicator.style.left = `${
-            document.querySelector(`.blockid[value='${blocko[i]}']`)?.parentNode
-              ?.offsetWidth! /
+            (
+              document.querySelector(`.blockid[value='${blocko[i]}']`)
+                ?.parentNode as HTMLElement
+            )?.offsetWidth! /
               2 -
             5
           }px`;
-          indicator.style.top = `${document.querySelector(
-            `.blockid[value='${blocko[i]}']`
-          )?.parentNode?.offsetHeight!}px`;
+          indicator.style.top = `${(
+            document.querySelector(`.blockid[value='${blocko[i]}']`)
+              ?.parentNode as HTMLElement
+          )?.offsetHeight!}px`;
           indicator.classList.remove("invisible");
           break;
         } else if (i === this.blocks.length - 1) {
@@ -1175,18 +1202,22 @@ class Flowy {
       const blocko = this.blocks.map((a) => a.id);
 
       for (let w = 0; w < this.blocks.length; w++) {
-        document.querySelector(
+        const block = document.querySelector(
           ".blockid[value='" +
             this.blocks.filter((a) => a.id === blocko[w])[0].id +
             "']"
-        ).parentNode.style.left = `${
-          this.blocks.filter((a) => a.id === blocko[w])[0].x -
-          this.blocks.filter((a) => a.id === blocko[w])[0].width / 2 -
-          offsetleft +
-          this.canvasDiv.getBoundingClientRect().left -
-          this.absX +
-          20
-        }px`;
+        );
+        const parentNode = block ? (block.parentNode as HTMLElement) : null;
+        if (parentNode) {
+          parentNode.style.left = `${
+            this.blocks.filter((a) => a.id === blocko[w])[0].x -
+            this.blocks.filter((a) => a.id === blocko[w])[0].width / 2 -
+            offsetleft +
+            this.canvasDiv.getBoundingClientRect().left -
+            this.absX +
+            20
+          }px`;
+        }
 
         if (this.blocks.filter((a) => a.id === blocko[w])[0].parent !== -1) {
           const arrowblock = this.blocks.filter((a) => a.id === blocko[w])[0];
@@ -1198,52 +1229,60 @@ class Flowy {
             )[0].x;
 
           if (arrowx < 0) {
-            document.querySelector(
+            const arrowBlock = document.querySelector(
               '.arrowid[value="' + blocko[w] + '"]'
-            ).parentNode.style.left = `${
-              arrowblock.x -
-              offsetleft +
-              20 -
-              5 +
-              this.canvasDiv.getBoundingClientRect().left -
-              this.absX
-            }px`;
+            );
+            const parentNode = arrowBlock
+              ? (arrowBlock.parentNode as HTMLElement)
+              : null;
+            if (parentNode) {
+              parentNode.style.left = `${
+                arrowblock.x -
+                offsetleft +
+                20 -
+                5 +
+                this.canvasDiv.getBoundingClientRect().left -
+                this.absX
+              }px`;
+            }
           } else {
-            document.querySelector(
+            const block = document.querySelector(
               '.arrowid[value="' + blocko[w] + '"]'
-            ).parentNode.style.left = `${
-              this.blocks.filter(
-                (id) =>
-                  id.id ===
-                  this.blocks.filter((a) => a.id === blocko[w])[0].parent
-              )[0].x -
-              20 -
-              offsetleft +
-              this.canvasDiv.getBoundingClientRect().left -
-              this.absX +
-              20
-            }px`;
+            );
+            const parentNode = block ? (block.parentNode as HTMLElement) : null;
+            if (parentNode) {
+              parentNode.style.left = `${
+                this.blocks.filter(
+                  (id) =>
+                    id.id ===
+                    this.blocks.filter((a) => a.id === blocko[w])[0].parent
+                )[0].x -
+                20 -
+                offsetleft +
+                this.canvasDiv.getBoundingClientRect().left -
+                this.absX +
+                20
+              }px`;
+            }
           }
         }
       }
 
       for (let w = 0; w < this.blocks.length; w++) {
-        this.blocks[w].x =
-          document
-            .querySelector(".blockid[value='" + this.blocks[w].id + "']")
-            .parentNode.getBoundingClientRect().left +
-          window.scrollX +
-          this.canvasDiv.scrollLeft +
-          parseInt(
-            window.getComputedStyle(
-              document.querySelector(
-                ".blockid[value='" + this.blocks[w].id + "']"
-              ).parentNode
-            ).width
-          ) /
-            2 -
-          20 -
-          this.canvasDiv.getBoundingClientRect().left;
+        const block = document.querySelector(
+          ".blockid[value='" + this.blocks[w].id + "']"
+        );
+        const parentNode = block ? (block.parentNode as HTMLElement) : null;
+
+        if (parentNode) {
+          this.blocks[w].x =
+            parentNode.getBoundingClientRect().left +
+            window.scrollX +
+            this.canvasDiv.scrollLeft +
+            parseInt(window.getComputedStyle(parentNode).width) / 2 -
+            20 -
+            this.canvasDiv.getBoundingClientRect().left;
+        }
       }
     }
   }
@@ -1284,33 +1323,36 @@ class Flowy {
 
       let totalremove = 0;
       parentBlocks.forEach((children) => {
-        const r_block = document.querySelector(
+        const block = document.querySelector(
           `.blockid[value="${children.id}"]`
-        ).parentNode;
-        const r_array = this.blocks.filter((id) => id.id === result[z]);
-        r_block.style.top = `${
-          r_array.y +
-          paddingy +
-          this.canvasDiv.getBoundingClientRect().top -
-          this.absY
-        }px`;
-        r_array.y = r_array.y + paddingy;
-        const calcWidth =
-          children.childwidth > children.width
-            ? children.childwidth
-            : children.width;
-        r_block.style.left = `${
-          r_array[0].x -
-          totalwidth / 2 +
-          totalremove +
-          calcWidth / 2 -
-          children.width / 2 -
-          (this.absX + window.scrollX) +
-          this.canvasDiv.getBoundingClientRect().left
-        }px`;
-        children.x =
-          r_array[0].x - totalwidth / 2 + totalremove + calcWidth / 2;
-        totalremove += calcWidth + paddingx;
+        );
+        const r_block = block ? (block.parentNode as HTMLElement) : null;
+        const r_array = this.blocks.filter((id) => id.id === result[z])[0];
+        if (r_block) {
+          r_block.style.top = `${
+            r_array.y +
+            paddingy +
+            this.canvasDiv.getBoundingClientRect().top -
+            this.absY
+          }px`;
+          r_array.y = r_array.y + paddingy;
+          const calcWidth =
+            children.childwidth > children.width
+              ? children.childwidth
+              : children.width;
+          r_block.style.left = `${
+            r_array.x -
+            totalwidth / 2 +
+            totalremove +
+            calcWidth / 2 -
+            children.width / 2 -
+            (this.absX + window.scrollX) +
+            this.canvasDiv.getBoundingClientRect().left
+          }px`;
+
+          children.x = r_array.x - totalwidth / 2 + totalremove + calcWidth / 2;
+          totalremove += calcWidth + paddingx;
+        }
 
         const arrowblock = this.blocks.filter((a) => a.id === children.id)[0];
         const arrowx =
