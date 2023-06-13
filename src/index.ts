@@ -46,7 +46,7 @@ class Flowy {
   private active: boolean = false;
   private paddingX: number;
   private paddingY: number;
-  private offsetleft: number = 0;
+  private offsetleftX: number[] = [];
   private drag?: HTMLElement;
   private dragX?: number;
   private dragY?: number;
@@ -1188,9 +1188,9 @@ class Flowy {
   }
 
   checkOffset(): void {
-    let offsetleftX = this.blocks.map((a) => a.x);
+    this.offsetleftX = this.blocks.map((a) => a.x);
     const widths = this.blocks.map((a) => a.width);
-    const mathmin = offsetleftX.map(function (item, index) {
+    const mathmin = this.offsetleftX.map(function (item, index) {
       return item - widths[index] / 2;
     });
     const offsetleft = Math.min.apply(Math, mathmin);
