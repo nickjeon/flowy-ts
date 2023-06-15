@@ -37,7 +37,7 @@ interface Output {
 }
 
 class Flowy {
-  private loaded: boolean = false;
+  public loaded: boolean = false;
   private blocks: Block[] = [];
   private tempBlocks: Block[] = [];
   private canvasDiv: HTMLElement;
