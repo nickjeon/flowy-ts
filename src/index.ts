@@ -498,9 +498,10 @@ class Flowy {
           this.blocks.filter((a) => a.id === id)[0].x - arrow.x + 5
         } ${this.paddingY / 2}L5 ${
           this.paddingY / 2
-        }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/><path d="M0 ${
-          y - 5
-        }H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/></svg></div>`;
+        }L5 ${y}" stroke="#C5CCD0" stroke-width="2px"/>
+              <path d="M0 ${y - 5}H10L5 ${y}L0 ${y - 5}Z" fill="#C5CCD0"/>
+            </svg>
+            </div>`;
 
         const arrowSelector = `.arrowid[value="${blockIdValue}"]`;
         const arrowElement = document.querySelector(
