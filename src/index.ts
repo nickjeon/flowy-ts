@@ -311,17 +311,19 @@ class Flowy {
 
   checkAttach(id: number): boolean {
     if (!this.drag) return false;
+    const dragBounding = this.drag.getBoundingClientRect();
+    const canvasBounding = this.canvasDiv.getBoundingClientRect();
     const xpos =
-      this.drag.getBoundingClientRect().left +
+      dragBounding.left +
       window.scrollX +
       parseInt(window.getComputedStyle(this.drag).width) / 2 +
       this.canvasDiv.scrollLeft -
-      this.canvasDiv.getBoundingClientRect().left;
+      canvasBounding.left;
     const ypos =
-      this.drag.getBoundingClientRect().top +
+      dragBounding.top +
       window.scrollY +
       this.canvasDiv.scrollTop -
-      this.canvasDiv.getBoundingClientRect().top;
+      canvasBounding.top;
     const block = this.blocks.filter((a) => a.id === id)[0];
 
     if (
@@ -341,7 +343,9 @@ class Flowy {
     if (indicator instanceof Node) {
       this.canvasDiv.appendChild(indicator);
     }
-    if (this.drag) this.drag.parentNode?.removeChild(this.drag);
+    if (this.drag) {
+      this.drag.parentNode?.removeChild(this.drag);
+    }
   }
 
   firstBlock(type: string): void {
