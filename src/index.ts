@@ -867,7 +867,7 @@ class Flowy {
   }
 
   touchblock(event: MouseEvent | TouchEvent): void {
-    let dragblock = false;
+    this.dragblock = false;
     const targetElement = event.target as HTMLElement;
 
     if (this.hasParentClass(targetElement, "block")) {
@@ -889,7 +889,7 @@ class Flowy {
       ) {
         if ("which" in event && (event as MouseEvent).which !== 3) {
           if (!this.active && !this.rearrange) {
-            dragblock = true;
+            this.dragblock = true;
             this.drag = theblock;
             this.dragX =
               mouse_x -
