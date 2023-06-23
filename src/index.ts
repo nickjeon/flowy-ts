@@ -644,7 +644,6 @@ class Flowy {
     }
     let totalwidth = 0;
     let totalremove = 0;
-    let maxheight = 0;
     const parentBlocks = this.blocks.filter((id) => id.parent === blocko[i]);
 
     for (let w = 0; w < parentBlocks.length; w++) {
