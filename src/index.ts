@@ -931,7 +931,7 @@ class Flowy {
         ".blockid"
       ) as HTMLInputElement | null;
       const blockID = block ? parseInt(block.value) : null;
-      const prevblock = this.blocks.filter((a) => a.id === blockID)[0].parent;
+      this.prevblock = this.blocks.filter((a) => a.id === blockID)[0].parent;
       this.tempBlocks.push(this.blocks.filter((a) => a.id === blockID)[0]);
       this.blocks = this.blocks.filter((e) => e.id !== blockID);
 
