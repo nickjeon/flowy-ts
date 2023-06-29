@@ -47,7 +47,7 @@ class Flowy {
   private paddingX: number;
   private paddingY: number;
   private offsetleftX: number[] = [];
-  private drag?: HTMLElement;
+  private drag = (block: HTMLElement | Element) => {};
   private dragX?: number;
   private dragY?: number;
   private original?: Element;
